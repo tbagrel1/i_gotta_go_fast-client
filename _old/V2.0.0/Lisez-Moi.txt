@@ -1,0 +1,42 @@
+CHANGELOG
+----------------------------------------
+
+V 2.0.0
+--------------------
+Reprogrammation avec Python 2
+Correction des bugs, implémentation des dernières fonctions
+Supression du multi-threading, plus de plantage lors de la fermeture
+Intégration de la fonction d'entrée/sortie asymétrique
+Finitions dans l'interface et dans la gestion des événements
+Limitation de l'utilisation du CPU (pauses dans le thread Timer)
+Nouvelle liste de mots de base
+
+V 1.0.1
+--------------------
+Version corrigée de la version V1.0.0
+Prête à être distribuée, en attendant la V2.0.0
+
+V 1.0.0
+--------------------
+Version de base, en console, liste de mots fixe (version de test, seul
+l'algorithme importe)
+
+LISEZ - MOI
+----------------------------------------
+
+Liste de mots
+--------------------
+Le fichier de mots peut maintenant être modifié, il faut cependant respecter
+une certaine syntaxe :
+Chaque ligne doit comporter soit :
+- 1 mot (entrée et sortie identique) et rien d'autre ;
+- 2 mots ou expressions (entrée et sortie différente), séparés par une barre
+verticale | .
+De plus, le fichier doit comporter :
+- 1 ligne vide, sans espace ni rien d'autre, à la fin du fichier ;
+Il ne faut ni déplacer le fichier, ni le renommer.
+
+CREDITS
+----------------------------------------
+Thomas BAGREL - 2015 - Lycée Arthur Varoquaux
+Première Scientifique - tomsb07@gmail.com
