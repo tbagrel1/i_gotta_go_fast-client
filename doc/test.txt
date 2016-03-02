@@ -1,7 +1,0 @@
-@@@@@@@@@@@@@@@@@@@@@@@
-@                     @
-@    DOCUMENTATION    @
-@                     @
-@@@@@@@@@@@@@@@@@@@@@@@
-
-Ce fichier contiendra une ébauche de la documentation
