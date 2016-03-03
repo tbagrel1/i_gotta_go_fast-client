@@ -8,8 +8,8 @@ Voilà comment on fait de *l'italique*, et comment on fait du **gras**.
 Une autre solution est `_italique_` et `__gras__`
 
 >Ceci est une citation. On l'obtient en utilisant le caractère `>`  
->Il suffit de répéter ce caractère sur la ligne suivante pour continuer la  
->citation
+Il suffit de répéter ce caractère sur la ligne suivante pour continuer la  
+citation
 
 ## Afficher du code
 
