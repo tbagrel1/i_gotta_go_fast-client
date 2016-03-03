@@ -13,7 +13,7 @@ citation
 
 ## Afficher du code
 
-Pour afficher du code sur une ligne, on peut utiliser les caractères `\`code\``
+Pour afficher du code sur une ligne, on peut utiliser les caractères \``code\``
 Pour afficher du code sur plusieurs lignes, on peut faire :  
 ```python
 def est_pair(nombre):
