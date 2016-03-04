@@ -16,8 +16,6 @@ SOURCES += main.cpp\
         fenetre1.cpp \
     sfenetre1.cpp
 
-HEADERS  += fenetre1.h \
-    sfenetre1.h
+HEADERS  +=
 
-FORMS    += fenetre1.ui \
-    sfenetre1.ui
+FORMS    +=
