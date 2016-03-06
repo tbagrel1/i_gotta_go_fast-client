@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2016-03-04T09:06:42
+# Project created by QtCreator 2016-03-04T09:54:43
 #
 #-------------------------------------------------
 
@@ -8,13 +8,13 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Module1
+TARGET = Module
 TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        module1.cpp
+        module.cpp
 
-HEADERS  += module1.h
+HEADERS  += module.h
 
-FORMS    += module1.ui
+FORMS    += module.ui
