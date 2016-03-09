@@ -7,10 +7,10 @@
 On importe `os.system` pour utiliser des commandes systèmes, et
 `sys.argv` pour utiliser les arguments passés au programme lors du
 lancement
-```python
-from os import system
-from sys import argv
-```
+
+>\[...\]
+
+
 ##Déclaration des fonctions
 ###Fonction permettant de tester la parité d'un nombre
 Renvoie `True` si le paramètre `nombre` est pair, et `False` sinon
@@ -21,6 +21,21 @@ def est_pair(nombre):
         return True
     else:
         return False
+```
+###Fonction permettant d'afficher les nombres de `a` à `b`
+ Renvoie rien (`None`)  
+ Affiche les nombres de `a` à `b` tous deux inclus
+```python
+def compteur(a, b):
+    while a <= b:
+        # On affiche a
+        print(a)
+```
+>>>\[...\]
+
+```python
+        # On finit la boucle
+        pass
 ```
 ##Corps du programme
 On demande à l'utilisateur de saisir un nombre `a`
