@@ -284,7 +284,7 @@ public:
         retranslateUi(Menu);
 
         TabMode->setCurrentIndex(1);
-        TabSource->setCurrentIndex(0);
+        TabSource->setCurrentIndex(2);
 
 
         QMetaObject::connectSlotsByName(Menu);
@@ -309,8 +309,8 @@ public:
         TabMode->setTabText(TabMode->indexOf(TabMotLimite), QApplication::translate("Menu", "Nombre de mots limit\303\251", 0, QApplication::UnicodeUTF8));
         LabelCorrection->setText(QApplication::translate("Menu", "2. Choisissez votre mode de correction", 0, QApplication::UnicodeUTF8));
         CorrManuValJuste->setText(QApplication::translate("Menu", "Correction avec <--- Validation &quand le mot est juste", 0, QApplication::UnicodeUTF8));
-        CorrManuValAll->setText(QApplication::translate("Menu", "Correction avec <--- Validation dans tous les cas", 0, QApplication::UnicodeUTF8));
-        CorrAuto->setText(QApplication::translate("Menu", "Correction automati&que", 0, QApplication::UnicodeUTF8));
+        CorrManuValAll->setText(QApplication::translate("Menu", "Correction avec <--- &Validation dans tous les cas", 0, QApplication::UnicodeUTF8));
+        CorrAuto->setText(QApplication::translate("Menu", "Co&rrection automatique", 0, QApplication::UnicodeUTF8));
         LabelSource->setText(QApplication::translate("Menu", "3. Choisissez votre source de texte", 0, QApplication::UnicodeUTF8));
         LabelMotsFR->setText(QApplication::translate("Menu", "Nombre de mots les plus utilis\303\251s :", 0, QApplication::UnicodeUTF8));
         TabSource->setTabText(TabSource->indexOf(TabMotsFR), QApplication::translate("Menu", "Mots les plus utilis\303\251s", 0, QApplication::UnicodeUTF8));

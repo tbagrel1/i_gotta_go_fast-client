@@ -283,7 +283,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Correction automati&amp;que</string>
+      <string>Co&amp;rrection automatique</string>
      </property>
     </widget>
    </widget>
@@ -335,7 +335,7 @@
       </font>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="TabMotsFR">
       <attribute name="title">
