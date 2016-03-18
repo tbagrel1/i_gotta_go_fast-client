@@ -208,6 +208,7 @@ class Ui_Module(object):
 
         self.retranslateUi(Module)
         QtCore.QObject.connect(self.BoutonQuitter, QtCore.SIGNAL(_fromUtf8("clicked()")), Module.close)
+        QtCore.QObject.connect(self.EntryTaper, QtCore.SIGNAL(_fromUtf8("textChanged(QString)")), self.TextBoxTaper.setText)
         QtCore.QMetaObject.connectSlotsByName(Module)
 
     def retranslateUi(self, Module):
