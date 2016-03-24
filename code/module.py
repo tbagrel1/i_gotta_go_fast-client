@@ -9,154 +9,119 @@ from PyQt4.QtGui import *
 from ui_module import Ui_Module
 from time import time, sleep
 
-# Import toThread (A replier)
-if True:  # Ajout du module threadTBAG
-    from threading import *
-
-    def static(var_name, value):
-        def decorate(func):
-            setattr(func, var_name, value)
-            return func
-        return decorate
-
-    # Définition des classes et fonctions :
-    class aThread(Thread):
-        def __init__(self, threadID, name, command):
-            Thread.__init__(self)
-            self.threadID = threadID
-            print("id: <{}>".format(self.threadID))
-            self.name = name
-            print("name: <{}>".format(self.name))
-            self.command = command
-            print("command: <{}>".format(self.command))
-
-        def run(self):
-            print("Starting " + self.name + " : " + str(self.threadID) +
-                  " { " + self.command + " }")
-            exec(self.command)
-            print("Exiting " + self.name + " : " + str(self.threadID) +
-                  " { " + self.command + " }")
-
-    @static("c", 0)
-    def toThread(name, command):
-        exec("Thread_" + str(toThread.c) + " = aThread(" + str(toThread.c) +
-             ", \"" + name + "\", \"" + command + "\")")
-        exec("Thread_" + str(toThread.c) + ".daemon = True")
-        exec("Thread_" + str(toThread.c) + ".start()")
-        toThread.c += 1
-
-# Déclaration des globales
-
-# Paramètres importés de Menu à placer en argument de main()
-temps_limite = True
-temps_choisi = 30.0
-
-corr_auto = True
-
-mots_plus_utilises = True
-nb_mots_plus_utilises = 100
-texte = u"Léo le cerf court dans la forêt. Il rencontre ses amis au coin d\
-'un ruisseau, et leur demande si ils vont bien. Ces derniers lui \
-répondent par la négative : un de leurs frères a disparu !"
-
-texte = texte.replace("\n", " ")
-
-# Autres global
-
-# Pour rappel, 22 caractères dans chaque boîte D / G en haut, plus 1 au
-# centre -> 45
-# 8 + 1 sur la ligne du bas
-
-pos_texte = 0
-
-texte_d = texte[:pos_texte]
-texte_g = texte[(pos_texte + 1):]
-car_attendu = texte[pos_texte]
-
-print(texte_d, car_attendu, texte_g)
-
-jeton_quitter = False
-temps_depart = 0.0
-temps_inter = 0.0
-temps_ecoule = 0.0
-temps_restant = 0.0
-jeton_temps_valid = True
-jeton_pause = False
-temps_debut_pause = 0.0
-temps_fin_pause = 0.0
-
 # Déclaration des classes
 
-# class ThreadTimer(QThread):
-#     def __init__(self, temps_choisi):
-#         Thread.__init__(self)
-#         pause_active_signal = pyqtSignal()
-#         pause_desactive_signal = pyqtSignal()
-#         temps_fini_signal = pyqtSignal()
-#         temps_change_signal = pyqtSignal(float)
-#     def run(self):
-#         # Il faut émit des signaux pour communiquer avec le prog principal
-#         global jeton_quitter
-#         global temps_depart
-#         global temps_inter
-#         global temps_ecoule
-#         global temps_restant
-#         global jeton_temps_valid
-#         global jeton_pause
-#         global temps_debut_pause
-#         global temps_fin_pause
-#         temps_debut = time()
-#         while not jeton_quitter:
-#             temps_inter = time()
-#             temps_ecoule = temps_inter - temps_depart
-#             temps_restant = temps_choisi - temps_ecoule
-#             if jeton_pause:
-#                 temps_debut_pause = time()
-#                 ### EMIT PAUSE ACTIVE
-#                 pause_active_signal.emit()
-#                 while jeton_pause:
-#                     sleep(0.1)
-#                 temps_fin_pause = time()
-#                 temps_pause_ecoule = temps_fin_pause - temps_debut_pause
-#                 temps_depart += temps_pause_ecoule
-#                 ### EMIT PAUSE DESACTIVE
-#                 pause_desactive_signal.emit()
-#             if temps_restant <= 0.0:
-#                 ### EMIT FINI
-#                 temps_fini_signal.emit()
-#                 jeton_temps_valid = False
-#             else:
-#                 ### EMIT TEMPS_CHANGE -> return temps_restant
-#                 temps_change_signal.emit(temps_restant)
+class ThreadTimer(QThread):
+    temps_fini_signal = pyqtSignal()
+    temps_change_signal = pyqtSignal(float)
+    finished = pyqtSignal()
+
+    def __init__(self, temps_choisi):
+        QThread.__init__(self)
+        self.temps_choisi = temps_choisi
+        self.temps_depart = 0.0
+        self.temps_inter = 0.0
+        self.temps_ecoule = 0.0
+        self.temps_restant = 0.0
+        self.jeton_quitter = False
+        self.jeton_pause = False
+        self.temps_debut_pause = 0.0
+        self.temps_fin_pause = 0.0
+
+    def run(self):
+        # Il faut émit des signaux pour communiquer avec le prog principal
+        self.temps_depart = time()
+        while not self.jeton_quitter:
+            self.temps_inter = time()
+            self.temps_ecoule = self.temps_inter - self.temps_depart
+            self.temps_restant = self.temps_choisi - self.temps_ecoule
+            if self.temps_restant <= 0.0:
+                self.temps_restant = 0.0
+                self.temps_change_signal.emit(self.temps_restant)
+                self.temps_fini_signal.emit()
+                return
+            else:
+                self.temps_change_signal.emit(self.temps_restant)
+                sleep(0.1)
+            if self.jeton_pause:
+                self.temps_debut_pause = time()
+                while self.jeton_pause and not self.jeton_quitter:
+                    sleep(0.1)
+                self.temps_fin_pause = time()
+                self.temps_pause_ecoule = (self.temps_fin_pause -
+                                           self.temps_debut_pause)
+                self.temps_depart += self.temps_pause_ecoule
+        self.finished.emit()
+
+    @pyqtSlot()
+    def pauseT(self):
+        self.jeton_pause = True
+
+    @pyqtSlot()
+    def reprendreT(self):
+        self.jeton_pause = False
+
+    @pyqtSlot()
+    def quitterT(self):
+        self.jeton_quitter = True
 
 class ModuleApplication(QMainWindow, Ui_Module):
     def __init__(self, parent=None):
         super(ModuleApplication, self).__init__(parent)
         self.setupUi(self)
 
+        # Déclaration des globales
+
+        self.jeton_pauseM = False
+        self.temps_limite = True
+        self.temps_choisi = 30.0
+        self.texte = u"Léo le cerf court dans la forêt. Il rencontre ses amis \
+au coin d'un ruisseau, et leur demande si ils vont bien. Ces derniers lui \
+répondent par la négative : un de leurs frères a disparu !"
+        self.texte = self.texte.replace("\n", " ")
+        self.pos_texte = 0
+        self.texte_d = self.texte[:self.pos_texte]
+        self.texte_g = self.texte[(self.pos_texte + 1):]
+        self.car_attendu = self.texte[self.pos_texte]
+        self.temps_restant = 0.0
+        self.premier_lancement_timer = True
+        self.couleur_backup = ""
+
+        self.Timer = ThreadTimer(self.temps_choisi)
+        self.Timer.finished.connect(self.Timer.deleteLater)
+
         # On setup les widgets
-        # global temps_choisi
-        # self.Timer = ThreadTimer(temps_choisi)
-        # self.Timer.daemon = True
+
+        self.updateTexteLabel()
+        self.temps_change(self.temps_choisi)
 
         # Ici on bind les signaux et les slots
 
         self.EntryTapeCentre.textChanged.connect(self.getDerCar)
-        self.updateTexteLabel()
-        # self.BoutonStartPause.clicked.connect(self.premierLancementTimer)
-        self.BoutonQuitter.clicked.connect(self.quitter)
-        # self.Timer.pause_active_signal.connect()
+        self.BoutonStartPause.clicked.connect(self.togglePauseM)
+        self.BoutonQuitter.clicked.connect(self.quitterM)
+        self.Timer.temps_change_signal.connect(self.temps_change)
+        self.Timer.temps_fini_signal.connect(self.temps_fini)
+
+        # On disable tant que pas commencé
+
+        self.LabelTexteDroite.setEnabled(False)
+        self.LabelTexteCentre.setEnabled(False)
+        self.LabelTexteGauche.setEnabled(False)
+        self.LabelTapeDroit.setEnabled(False)
+        self.EntryTapeCentre.setEnabled(False)
+        self.LabelTapeFleche.setEnabled(False)
 
     # Ici on créer les slots et signaux persos
 
+    @pyqtSlot(str)
     def getDerCar(self, ligne_tapee):
         der_car_T = unicode(ligne_tapee)
         self.EntryTapeCentre.clear()
         self.interpreterDerCar(der_car_T)
 
     def interpreterDerCar(self, der_car_T):
-        global car_attendu
-        if der_car_T == car_attendu:
+        if der_car_T == self.car_attendu:
             self.decalerTexte()
             self.vert()
         else:
@@ -169,32 +134,24 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.LabelTapeFleche.setStyleSheet("background-color: red")
 
     def decalerTexte(self):
-        global texte
-        global pos_texte
-        global texte_g
-        global texte_d
-        global car_attendu
-        pos_texte += 1
-        texte_d = texte[:pos_texte]
-        car_attendu = texte[pos_texte]
-        texte_g = texte[(pos_texte + 1):]
-        if (len(texte) - pos_texte) <= 23:
-            texte += (u" " + texte)
+        self.pos_texte += 1
+        self.texte_d = self.texte[:self.pos_texte]
+        self.car_attendu = self.texte[self.pos_texte]
+        self.texte_g = self.texte[(self.pos_texte + 1):]
+        if (len(self.texte) - self.pos_texte) <= 23:
+            self.texte += (u" " + self.texte)
             # On met à jour les labels
         self.updateTexteLabel()
 
     def updateTexteLabel(self):
-        global texte_d
-        global texte_g
-        global car_attendu
-        texte_aff_droite = texte_d
+        texte_aff_droite = self.texte_d
         if len(texte_aff_droite) > 22:
             texte_aff_droite = texte_aff_droite[-22:]
-        texte_aff_centre = car_attendu
-        texte_aff_gauche = texte_g
+        texte_aff_centre = self.car_attendu
+        texte_aff_gauche = self.texte_g
         if len(texte_aff_gauche) > 22:
             texte_aff_gauche = texte_aff_gauche[:22]
-        texte_aff_basdroite = texte_d
+        texte_aff_basdroite = self.texte_d
         if len(texte_aff_basdroite) > 9:
             texte_aff_basdroite = texte_aff_basdroite[-9:]
         self.LabelTexteDroite.setText(texte_aff_droite)
@@ -202,19 +159,82 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.LabelTexteGauche.setText(texte_aff_gauche)
         self.LabelTapeDroit.setText(texte_aff_basdroite)
 
+    @pyqtSlot()
+    def togglePauseM(self):
+        if self.premier_lancement_timer:
+            self.premier_lancement_timer = False
+            self.Timer.start()
+            self.BoutonStartPause.setText(u"Pause")
+            self.LabelTexteDroite.setEnabled(True)
+            self.LabelTexteCentre.setEnabled(True)
+            self.LabelTexteGauche.setEnabled(True)
+            self.LabelTapeDroit.setEnabled(True)
+            self.EntryTapeCentre.setEnabled(True)
+            self.EntryTapeCentre.setFocus()
+            self.LabelTapeFleche.setEnabled(True)
+        else:
+            if not self.jeton_pauseM:
+                self.pauseM()
+            elif self.jeton_pauseM:
+                self.reprendreM()
 
-    # def premierLancementTimer(self):
-    #     self.Timer.start()
-    #     self.BoutonStartPause.clicked.connect(self.Timer.togglePause)
+    def pauseM(self):
+        self.Timer.pauseT()
+        self.BoutonStartPause.setText("Reprendre")
+        self.jeton_pauseM = True
+        # DISABLE
+        self.LabelTexteDroite.setEnabled(False)
+        self.LabelTexteCentre.setEnabled(False)
+        self.LabelTexteGauche.setEnabled(False)
+        self.LabelTapeDroit.setEnabled(False)
+        self.EntryTapeCentre.setEnabled(False)
+        self.LabelTapeFleche.setEnabled(False)
+        self.couleur_backup = self.LabelTapeFleche.styleSheet()
+        self.LabelTapeFleche.setStyleSheet("")
 
-    def quitter(self):
-        global jeton_quitter
-        jeton_quitter = True
+
+    def reprendreM(self):
+        self.Timer.reprendreT()
+        self.BoutonStartPause.setText("Pause")
+        self.jeton_pauseM = False
+        self.LabelTexteDroite.setEnabled(True)
+        self.LabelTexteCentre.setEnabled(True)
+        self.LabelTexteGauche.setEnabled(True)
+        self.LabelTapeDroit.setEnabled(True)
+        self.EntryTapeCentre.setEnabled(True)
+        self.EntryTapeCentre.setFocus()
+        self.LabelTapeFleche.setEnabled(True)
+        self.LabelTapeFleche.setStyleSheet(self.couleur_backup)
+
+
+    @pyqtSlot()
+    def quitterM(self):
+        self.Timer.quitterT()
+        self.Timer.wait()
         self.close()
+
+    @pyqtSlot(float)
+    def temps_change(self, temps_restant):
+        self.temps_restant = temps_restant
+        self.LabelRestantV.setText(unicode(
+                                   "{} / {}"
+                                   .format(round(self.temps_restant, 1),
+                                           round(self.temps_choisi, 1))))
+        self.BarreAvancement.setValue(int(round((self.temps_restant /
+                                                 self.temps_choisi) * 100, 0)))
+
+    @pyqtSlot()
+    def temps_fini(self):
+        self.LabelTexteDroite.setEnabled(False)
+        self.LabelTexteCentre.setEnabled(False)
+        self.LabelTexteGauche.setEnabled(False)
+        self.LabelTapeDroit.setEnabled(False)
+        self.EntryTapeCentre.setEnabled(False)
+        self.LabelTapeFleche.setEnabled(False)
 
 # Programme principal
 
-def main():
+def main():  # On mettra des paramètres au main hérités du menu
     app = QApplication(sys.argv)
     myapp = ModuleApplication()
     myapp.show()
