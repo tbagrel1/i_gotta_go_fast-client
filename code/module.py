@@ -24,13 +24,14 @@ class ThreadTimer(QThread):
         self.temps_ecoule = 0.0
         self.temps_restant = 0.0
         self.jeton_quitter = False
-        self.jeton_pause = False
+        self.jeton_pause = True
         self.temps_debut_pause = 0.0
         self.temps_fin_pause = 0.0
 
     def run(self):
         # Il faut émit des signaux pour communiquer avec le prog principal
         self.temps_depart = time()
+        self.jeton_pause = False
         while not self.jeton_quitter:
             self.temps_inter = time()
             self.temps_ecoule = self.temps_inter - self.temps_depart
@@ -53,15 +54,12 @@ class ThreadTimer(QThread):
                 self.temps_depart += self.temps_pause_ecoule
         self.finished.emit()
 
-    @pyqtSlot()
     def pauseT(self):
         self.jeton_pause = True
 
-    @pyqtSlot()
     def reprendreT(self):
         self.jeton_pause = False
 
-    @pyqtSlot()
     def quitterT(self):
         self.jeton_quitter = True
 
@@ -72,9 +70,9 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
         # Déclaration des globales
 
-        self.jeton_pauseM = False
+        self.jeton_pauseM = True
         self.temps_limite = True
-        self.temps_choisi = 30.0
+        self.temps_choisi = 15.0
         self.texte = u"Léo le cerf court dans la forêt. Il rencontre ses amis \
 au coin d'un ruisseau, et leur demande si ils vont bien. Ces derniers lui \
 répondent par la négative : un de leurs frères a disparu !"
@@ -86,6 +84,7 @@ répondent par la négative : un de leurs frères a disparu !"
         self.temps_restant = 0.0
         self.premier_lancement_timer = True
         self.couleur_backup = ""
+        self.jeton_temps_finiM = False
 
         self.Timer = ThreadTimer(self.temps_choisi)
         self.Timer.finished.connect(self.Timer.deleteLater)
@@ -109,8 +108,9 @@ répondent par la négative : un de leurs frères a disparu !"
         self.LabelTexteCentre.setEnabled(False)
         self.LabelTexteGauche.setEnabled(False)
         self.LabelTapeDroit.setEnabled(False)
-        self.EntryTapeCentre.setEnabled(False)
         self.LabelTapeFleche.setEnabled(False)
+
+        self.EntryTapeCentre.setFocus()
 
     # Ici on créer les slots et signaux persos
 
@@ -119,6 +119,8 @@ répondent par la négative : un de leurs frères a disparu !"
         der_car_T = unicode(ligne_tapee)
         self.EntryTapeCentre.clear()
         self.interpreterDerCar(der_car_T)
+        if self.jeton_pauseM:
+            self.togglePauseM()
 
     def interpreterDerCar(self, der_car_T):
         if der_car_T == self.car_attendu:
@@ -128,10 +130,10 @@ répondent par la négative : un de leurs frères a disparu !"
             self.rouge()
 
     def vert(self):
-        self.LabelTapeFleche.setStyleSheet("background-color: green")
+        self.LabelTapeFleche.setStyleSheet("color: green")
 
     def rouge(self):
-        self.LabelTapeFleche.setStyleSheet("background-color: red")
+        self.LabelTapeFleche.setStyleSheet("color: red")
 
     def decalerTexte(self):
         self.pos_texte += 1
@@ -161,15 +163,17 @@ répondent par la négative : un de leurs frères a disparu !"
 
     @pyqtSlot()
     def togglePauseM(self):
-        if self.premier_lancement_timer:
+        if self.jeton_temps_finiM:
+            self.recommencer()
+        elif self.premier_lancement_timer:
             self.premier_lancement_timer = False
+            self.jeton_pauseM = False
             self.Timer.start()
             self.BoutonStartPause.setText(u"Pause")
             self.LabelTexteDroite.setEnabled(True)
             self.LabelTexteCentre.setEnabled(True)
             self.LabelTexteGauche.setEnabled(True)
             self.LabelTapeDroit.setEnabled(True)
-            self.EntryTapeCentre.setEnabled(True)
             self.EntryTapeCentre.setFocus()
             self.LabelTapeFleche.setEnabled(True)
         else:
@@ -187,11 +191,10 @@ répondent par la négative : un de leurs frères a disparu !"
         self.LabelTexteCentre.setEnabled(False)
         self.LabelTexteGauche.setEnabled(False)
         self.LabelTapeDroit.setEnabled(False)
-        self.EntryTapeCentre.setEnabled(False)
         self.LabelTapeFleche.setEnabled(False)
+        self.EntryTapeCentre.setFocus()
         self.couleur_backup = self.LabelTapeFleche.styleSheet()
         self.LabelTapeFleche.setStyleSheet("")
-
 
     def reprendreM(self):
         self.Timer.reprendreT()
@@ -201,11 +204,9 @@ répondent par la négative : un de leurs frères a disparu !"
         self.LabelTexteCentre.setEnabled(True)
         self.LabelTexteGauche.setEnabled(True)
         self.LabelTapeDroit.setEnabled(True)
-        self.EntryTapeCentre.setEnabled(True)
         self.EntryTapeCentre.setFocus()
         self.LabelTapeFleche.setEnabled(True)
         self.LabelTapeFleche.setStyleSheet(self.couleur_backup)
-
 
     @pyqtSlot()
     def quitterM(self):
@@ -230,7 +231,18 @@ répondent par la négative : un de leurs frères a disparu !"
         self.LabelTexteGauche.setEnabled(False)
         self.LabelTapeDroit.setEnabled(False)
         self.EntryTapeCentre.setEnabled(False)
+        self.LabelTapeFleche.setStyleSheet("")
         self.LabelTapeFleche.setEnabled(False)
+        self.jeton_temps_finiM = True
+        self.setUpRecommencer()
+
+    def setUpRecommencer(self):
+        self.BoutonStartPause.setText("Recommencer")
+
+    def recommencer(self):
+        # A faire !!
+        pass
+
 
 # Programme principal
 
