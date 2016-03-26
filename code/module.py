@@ -3,13 +3,17 @@
 
 # Import des modules
 
-import sys
+from __future__ import division
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from ui_module import Ui_Module
 from time import time, sleep
+from math import log
+import sys
+import atexit
 
 # Déclaration des classes
+
 
 class ThreadTimer(QThread):
     temps_fini_signal = pyqtSignal()
@@ -63,13 +67,13 @@ class ThreadTimer(QThread):
     def quitterT(self):
         self.jeton_quitter = True
 
+
 class ModuleApplication(QMainWindow, Ui_Module):
     def __init__(self, parent=None):
         super(ModuleApplication, self).__init__(parent)
         self.setupUi(self)
 
         # Déclaration des globales
-
         self.jeton_pauseM = True
         self.temps_limite = True
         self.temps_choisi = 15.0
@@ -85,6 +89,15 @@ répondent par la négative : un de leurs frères a disparu !"
         self.premier_lancement_timer = True
         self.couleur_backup = ""
         self.jeton_temps_finiM = False
+        self.s_mots = 0.0
+        self.temps_ecoule = 0.0
+        self.score = 0.0
+
+        self.car_justes = 0
+        self.car_faux = 0
+
+        self.reussite = 0.0
+        self.erreurs = 0.0
 
         self.Timer = ThreadTimer(self.temps_choisi)
         self.Timer.finished.connect(self.Timer.deleteLater)
@@ -123,11 +136,14 @@ répondent par la négative : un de leurs frères a disparu !"
             self.togglePauseM()
 
     def interpreterDerCar(self, der_car_T):
-        if der_car_T == self.car_attendu:
-            self.decalerTexte()
-            self.vert()
-        else:
-            self.rouge()
+        if der_car_T != "":
+            if der_car_T == self.car_attendu:
+                self.decalerTexte()
+                self.car_justes += 1
+                self.vert()
+            else:
+                self.car_faux += 1
+                self.rouge()
 
     def vert(self):
         self.LabelTapeFleche.setStyleSheet("color: green")
@@ -223,6 +239,7 @@ répondent par la négative : un de leurs frères a disparu !"
                                            round(self.temps_choisi, 1))))
         self.BarreAvancement.setValue(int(round((self.temps_restant /
                                                  self.temps_choisi) * 100, 0)))
+        self.genererStats()
 
     @pyqtSlot()
     def temps_fini(self):
@@ -243,8 +260,48 @@ répondent par la négative : un de leurs frères a disparu !"
         # A faire !!
         pass
 
+    def genererStats(self):
+        # On compte le nombre de mots
+        self.compterMots()
+        self.compterJusteErreur()
+        self.compterScore()
+
+    def compterMots(self):
+        nombre_mots = len((self.texte_d).split(" ")) - 1
+        self.LabelScoreV.setText(unicode(str(nombre_mots)))
+        if nombre_mots <= 1:
+            nombre_mots = 1
+        self.temps_ecoule = self.temps_choisi - self.temps_restant
+        self.s_mots = self.temps_ecoule / nombre_mots
+        self.LabelSMotsV.setText(unicode(str(round(self.s_mots, 2))))
+
+    def compterJusteErreur(self):
+        somme = self.car_justes + self.car_faux
+        if somme == 0:
+            somme = 1
+        self.reussite = self.car_justes / somme
+        self.erreurs = self.car_faux / somme
+        # print(erreurs)
+        self.BarreReussite.setValue(round(self.reussite * 100, 0))
+        self.BarreErreurs.setValue(round(self.erreurs * 100, 0))
+
+    def compterScore(self):
+        avancement = self.temps_ecoule / self.temps_choisi
+        s_mots_mod = self.s_mots
+        if s_mots_mod == 0:
+            s_mots_mod = 1
+        inv_vitesse = 1 / s_mots_mod
+        erreurs_mod = self.erreurs
+        if erreurs_mod == 0:
+            erreurs_mod = 0.01
+        ln_inv_erreurs = log(1 / erreurs_mod)
+        ln_temps_plusC = log(self.temps_choisi / 60) + 5.5
+        self.score = avancement * inv_vitesse * ln_inv_erreurs *\
+            ln_temps_plusC * 100
+        self.LabelScoreV.setText(unicode(str(int(round(self.score, 0)))))
 
 # Programme principal
+
 
 def main():  # On mettra des paramètres au main hérités du menu
     app = QApplication(sys.argv)
