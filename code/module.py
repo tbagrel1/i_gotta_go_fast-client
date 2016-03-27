@@ -41,7 +41,8 @@ class ThreadTimer(QThread):
     temps_change_signal = pyqtSignal(float)
     finished = pyqtSignal()
 
-    #.####Méthode d'initialisation `__init__`
+    #.####Méthode d'initialisation `__init__`  
+    #.Méthode permettant d'initialiser la classe
     def __init__(self, temps_choisi):
         #.On hérite de la fonction `__init__` de la classe parente (`QThread`)
         QThread.__init__(self)
@@ -56,7 +57,7 @@ class ThreadTimer(QThread):
         self.temps_debut_pause = 0.0
         self.temps_fin_pause = 0.0
 
-    #.####Méthode principale `run`
+    #.####Méthode principale `run`  
     #.Cette méthode correspond au corps du thread, qui est appelée lors du
     #.`.start()`, et dont la fin correspond à la fin de l'execution du thread
     def run(self):
@@ -104,19 +105,19 @@ class ThreadTimer(QThread):
         #. du thread)
         self.finished.emit()
 
-    #.####Méthode de pause `pauseT`
+    #.####Méthode de pause `pauseT`  
     #.Cette méthode permet de mettre en pause le thread, en modifiant la
     #.valeur de l'attribut `jeton_pause` de `False` à `True`
     def pauseT(self):
         self.jeton_pause = True
 
-    #.####Méthode de pause `reprendreT`
+    #.####Méthode de pause `reprendreT`  
     #.Cette méthode permet de reprendre le thread après une pause, en
     #.modifiant la valeur de l'attribut `jeton_pause` de `True` à `False`
     def reprendreT(self):
         self.jeton_pause = False
 
-    #.####Méthode permettant de quitter le timer `quitterT`
+    #.####Méthode permettant de quitter le timer `quitterT`  
     #.Cette méthode permet de quitter le thread en modifiant la valeur de
     #.l'attribut `jeton_quitter` de `False` à `True`
     #.Cela casse la boucle principale de la méthode `run` du thread
