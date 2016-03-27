@@ -1,51 +1,64 @@
-#!/usr/bin/python2
-# -*- coding: utf-8 -*-
-#ref_to_md
+##À faire :
+- Commenter le code
+- Remettre au clair certaines parties du code
+- Faire notre menu, remodifier le GUI, le programmer, le binder
+- Changer s/mots en mots/min (revoir le système de stats)
+- Proposer un échantillon de textes plus étendu
+- Certaines parties du code à refaire / reprécises (ex : doubles espaces)
 
-#.##À faire :
-#.- Commenter le code
-#.- Remettre au clair certaines parties du code
-#.- Faire notre menu, remodifier le GUI, le programmer, le binder
-#.- Changer s/mots en mots/min (revoir le système de stats)
-#.- Proposer un échantillon de textes plus étendu
-#.- Certaines parties du code à refaire / reprécises (ex : doubles espaces)
+##Import des modules
 
-#.##Import des modules
-
-#.Import de `__future__.division` pour la division décimale même sur les `int`
+Import de `__future__.division` pour la division décimale même sur les `int`
+```python
 from __future__ import division
-#.Import des bibliothèques pour `PyQt` (interface graphique)
+```
+Import des bibliothèques pour `PyQt` (interface graphique)
+```python
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-#.Import de la fenêtre graphique designée avec *Qt Creator*
+```
+Import de la fenêtre graphique designée avec *Qt Creator*
+```python
 from ui_module import Ui_Module
-#.Import des bibliothèques standards de `python`
+```
+Import des bibliothèques standards de `python`
+```python
 from time import time, sleep
 from math import log
 import sys
-#.Import de la bibliothèque `atexit` nécessaire pour la création du `.exe`
+```
+Import de la bibliothèque `atexit` nécessaire pour la création du `.exe`
+```python
 import atexit
+```
+##Déclaration des classes
 
-#.##Déclaration des classes
-
-#.###Classe `ThreadTimer`
-#.La classe `ThreadTimer`, héritée de `QThread`, permet de lancer un timer en
-#.thread d'arrière plan, qui fonctionne tout seul (standalone)
-#.On peut intéragir avec le timer grâce aux fonctions `pauseT`, `reprendreT` et
-#.`quitterT`
+###Classe `ThreadTimer`
+La classe `ThreadTimer`, héritée de `QThread`, permet de lancer un timer en
+thread d'arrière plan, qui fonctionne tout seul (standalone)
+On peut intéragir avec le timer grâce aux fonctions `pauseT`, `reprendreT` et
+`quitterT`
+```python
 class ThreadTimer(QThread):
-    #.####En-tête de la classe
-    #.On créé ici les signaux `pyqtSignal` permettant d'intéragir avec le GUI
-    #.Ces signaux seront ensuite connectés au GUI avec la méthode `connect`
+```
+####En-tête de la classe
+On créé ici les signaux `pyqtSignal` permettant d'intéragir avec le GUI
+Ces signaux seront ensuite connectés au GUI avec la méthode `connect`
+```python
     temps_fini_signal = pyqtSignal()
     temps_change_signal = pyqtSignal(float)
     finished = pyqtSignal()
-
-    #.####Méthode d'initialisation `__init__`
+```
+####Méthode d'initialisation `__init__`
+```python
     def __init__(self, temps_choisi):
-        #.On hérite de la fonction `__init__` de la classe parente (`QThread`)
+```
+On hérite de la fonction `__init__` de la classe parente (`QThread`)
+```python
         QThread.__init__(self)
-        #.On créé les attributs de la classe
+```
+On créé les attributs de la fonction
+```python
         self.temps_choisi = temps_choisi
         self.temps_depart = 0.0
         self.temps_inter = 0.0
@@ -55,75 +68,98 @@ class ThreadTimer(QThread):
         self.jeton_pause = True
         self.temps_debut_pause = 0.0
         self.temps_fin_pause = 0.0
-
-    #.####Méthode principale `run`
-    #.Cette méthode correspond au corps du thread, qui est appelée lors du
-    #.`.start()`, et dont la fin correspond à la fin de l'execution du thread
+```
+####Méthode principale `run`
+Cette méthode correspond au corps du thread, qui est appelée lors du
+`.start()`, et dont la fin correspond à la fin de l'execution du thread
+```python
     def run(self):
-        #.On prend le temps lors du lancement et on désactive la pause
+```
+On prend le temps lors du lancement et on désactive la pause
+```python
         self.temps_depart = time()
         self.jeton_pause = False
-        #.Tant que `jeton_quitter` est `False` (tant que l'on ne veut pas
-        #.quitter)
+```
+Tant que `jeton_quitter` est `False` (tant que l'on ne veut pas
+quitter)
+```python
         while not self.jeton_quitter:
-            #.On calcule le temps restant
+```
+On calcule le temps restant
+```python
             self.temps_inter = time()
             self.temps_ecoule = self.temps_inter - self.temps_depart
             self.temps_restant = self.temps_choisi - self.temps_ecoule
-            #.Si il est négatif, on le met à `0`, on met une dernière fois à
-            #.jour le temps (signal `temps_change`), et on envoie un signal
-            #.pour dire que le temps est fini (signal `temps_fini`)
-            #.Enfin, on termine la méthode (`return`)
+```
+Si il est négatif, on le met à `0`, on met une dernière fois à
+jour le temps (signal `temps_change`), et on envoie un signal
+pour dire que le temps est fini (signal `temps_fini`)
+Enfin, on termine la méthode (`return`)
+```python
             if self.temps_restant <= 0.0:
                 self.temps_restant = 0.0
                 self.temps_change_signal.emit(self.temps_restant)
                 self.temps_fini_signal.emit()
                 return
-            #.Sinon, on met à jour le temps (signal `temps_change`), et on
-            #.fait hiberner le programme pendant `0,1` s
+```
+Sinon, on met à jour le temps (signal `temps_change`), et on
+fait hiberner le programme pendant `0,1` s
+```python
             else:
                 self.temps_change_signal.emit(self.temps_restant)
                 sleep(0.1)
-            #.Si la pause est activée, on prend le temps de début de pause
+```
+Si la pause est activée, on prend le temps de début de pause
+```python
             if self.jeton_pause:
                 self.temps_debut_pause = time()
-                #.Ensuite, tant que la pause est activée et que le timer ne
-                #.doit pas être quitté, le programme hiberne par pas de `0,1` s
+```
+Ensuite, tant que la pause est activée et que le timer ne
+doit pas être quitté, le programme hiberne par pas de `0,1` s
+```python
                 while self.jeton_pause and not self.jeton_quitter:
                     sleep(0.1)
-                #.Quand on sort de la boucle (pause terminée), on prend le
-                #.temps de fin de pause, on calcule le temps passé en pause,
-                #.et on ajoute cette durée au temps de lancement
-                #.(`temps_depart`)
+```
+Quand on sort de la boucle (pause terminée), on prend le
+temps de fin de pause, on calcule le temps passé en pause,
+et on ajoute cette durée au temps de lancement
+(`temps_depart`)
+```python
                 self.temps_fin_pause = time()
                 self.temps_pause_ecoule = (self.temps_fin_pause -
                                            self.temps_debut_pause)
                 self.temps_depart += self.temps_pause_ecoule
-        #.Quand la boucle est cassée (quand `jeton_quitter` vaut `True`), on
-        #.émet un signale `finished` (utile pour la destruction au bon moment
-        #. du thread)
+```
+Quand la boucle est cassée (quand `jeton_quitter` vaut `True`), on
+émet un signale `finished` (utile pour la destruction au bon moment
+ du thread)
+```python
         self.finished.emit()
-
-    #.####Méthode de pause `pauseT`
-    #.Cette méthode permet de mettre en pause le thread, en modifiant la
-    #.valeur de l'attribut `jeton_pause` de `False` à `True`
+```
+####Méthode de pause `pauseT`
+Cette méthode permet de mettre en pause le thread, en modifiant la
+valeur de l'attribut `jeton_pause` de `False` à `True`
+```python
     def pauseT(self):
         self.jeton_pause = True
-
-    #.####Méthode de pause `reprendreT`
-    #.Cette méthode permet de reprendre le thread après une pause, en
-    #.modifiant la valeur de l'attribut `jeton_pause` de `True` à `False`
+```
+####Méthode de pause `reprendreT`
+Cette méthode permet de reprendre le thread après une pause, en
+modifiant la valeur de l'attribut `jeton_pause` de `True` à `False`
+```python
     def reprendreT(self):
         self.jeton_pause = False
-
-    #.####Méthode permettant de quitter le timer `quitterT`
-    #.Cette méthode permet de quitter le thread en modifiant la valeur de
-    #.l'attribut `jeton_quitter` de `False` à `True`
-    #.Cela casse la boucle principale de la méthode `run` du thread
+```
+####Méthode permettant de quitter le timer `quitterT`
+Cette méthode permet de quitter le thread en modifiant la valeur de
+l'attribut `jeton_quitter` de `False` à `True`
+Cela casse la boucle principale de la méthode `run` du thread
+```python
     def quitterT(self):
         self.jeton_quitter = True
-
-#.###Classe ModuleApplication
+```
+###Classe ModuleApplication
+```python
 class ModuleApplication(QMainWindow, Ui_Module):
     def __init__(self, parent=None):
         super(ModuleApplication, self).__init__(parent)
@@ -382,3 +418,4 @@ def main():  # On mettra des paramètres au main hérités du menu
 
 if __name__ == "__main__":
     main()
+```
