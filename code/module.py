@@ -30,7 +30,7 @@ import atexit
 
 #.###Classe `ThreadTimer`
 #.La classe `ThreadTimer`, héritée de `QThread`, permet de lancer un timer en
-#.thread d'arrière plan, qui fonctionne tout seul (standalone)
+#.thread d'arrière plan, qui fonctionne tout seul (standalone)  
 #.On peut intéragir avec le timer grâce aux fonctions `pauseT`, `reprendreT` et
 #.`quitterT`
 class ThreadTimer(QThread):
@@ -73,7 +73,7 @@ class ThreadTimer(QThread):
             self.temps_restant = self.temps_choisi - self.temps_ecoule
             #.Si il est négatif, on le met à `0`, on met une dernière fois à
             #.jour le temps (signal `temps_change`), et on envoie un signal
-            #.pour dire que le temps est fini (signal `temps_fini`)
+            #.pour dire que le temps est fini (signal `temps_fini`)  
             #.Enfin, on termine la méthode (`return`)
             if self.temps_restant <= 0.0:
                 self.temps_restant = 0.0
@@ -119,33 +119,46 @@ class ThreadTimer(QThread):
 
     #.####Méthode permettant de quitter le timer `quitterT`  
     #.Cette méthode permet de quitter le thread en modifiant la valeur de
-    #.l'attribut `jeton_quitter` de `False` à `True`
+    #.l'attribut `jeton_quitter` de `False` à `True`  
     #.Cela casse la boucle principale de la méthode `run` du thread
     def quitterT(self):
         self.jeton_quitter = True
 
 #.###Classe ModuleApplication
+#.Cette classe hérite des classes `QMainWindow` et `Ui_Module` et permet la 
+#.création du GUI et toute sa gestion.  
+#.Cette classe contient la majeure partie du programme du module  
+#.Elle est directement issue de *Qt* (et donc `PyQt`)
 class ModuleApplication(QMainWindow, Ui_Module):
+    #.####Méthode d'initialisation `__init__`  
+    #.Méthode permettant d'initialiser la classe
     def __init__(self, parent=None):
+        #.On hérite de la méthode `__init__` des classes parentes
         super(ModuleApplication, self).__init__(parent)
+        #.On initialise les widgets décris dans le fichier auxiliaire 
+        #.`ui_module.py` créé avec *Qt Creator* et `PyQt`
         self.setupUi(self)
 
-        # Déclaration des globales
-
-        # Substitut de menu
+        #.**Ceci sera ensuite remplacé par le menu !**
+        #.On ouvre le fichier de configuration `module.conf`
         fichier_conf_brut = open("module.conf", "r")
+        #.On lit le fichier et on récupère les paramètres suivants :
+        #.- Temps choisi
+        #.- Nom (ou chemin) du fichier qui contient le texte à taper
         fichier_conf = fichier_conf_brut.readlines()
         self.temps_choisi = float((fichier_conf[1])[:-1])
         nom_fichier_texte = (fichier_conf[3])[:-1]
+        #.On ouvre ensuite le fichier qui contient le texte à taper
         fichier_texte_brut = open(nom_fichier_texte, "r")
         self.texte = fichier_texte_brut.read().decode("utf-8")
 
-        # On enlève les retours à la ligne
+        #.On enlève les retours à la ligne (remplacés par des espaces) et les 
+        #.doubles espaces de ce texte, impossible ou problématiques à taper 
+        #.pour l'utilisateur
         self.texte = (self.texte.replace("\n", " ")).strip()
-        # On enlève les doubles espaces <-- A améliorer pour enlever les
-        # triples...
         self.texte = self.texte.replace("  ", " ")
 
+        #.On définit les attributs
         self.pos_texte = 0
         self.texte_d = self.texte[:self.pos_texte]
         self.texte_g = self.texte[(self.pos_texte + 1):]
@@ -158,14 +171,17 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.s_mots = 0.0
         self.temps_ecoule = 0.0
         self.score = 0.0
-
         self.car_justes = 0
         self.car_faux = 0
-
         self.reussite = 0.0
         self.erreurs = 0.0
-
+        #.On créé l'attribut `Timer`, qui est une instance du `ThreadTimer` 
+        #.déclaré plus haut.  
+        #.On lui passe en argument le temps choisi dans le fichier de 
+        #.configuration
         self.Timer = ThreadTimer(self.temps_choisi)
+        #.On connecte le signal `finished` du timer à la fonction en charge de 
+        #.le détruire proprement
         self.Timer.finished.connect(self.Timer.deleteLater)
 
         # On setup les widgets
