@@ -35,7 +35,7 @@ import atexit
 
 ###Classe `ThreadTimer`
 La classe `ThreadTimer`, héritée de `QThread`, permet de lancer un timer en
-thread d'arrière plan, qui fonctionne tout seul (standalone)
+thread d'arrière plan, qui fonctionne tout seul (standalone)  
 On peut intéragir avec le timer grâce aux fonctions `pauseT`, `reprendreT` et
 `quitterT`
 ```python
@@ -49,7 +49,8 @@ Ces signaux seront ensuite connectés au GUI avec la méthode `connect`
     temps_change_signal = pyqtSignal(float)
     finished = pyqtSignal()
 ```
-####Méthode d'initialisation `__init__`
+####Méthode d'initialisation `__init__`  
+Méthode permettant d'initialiser la classe
 ```python
     def __init__(self, temps_choisi):
 ```
@@ -57,7 +58,7 @@ On hérite de la fonction `__init__` de la classe parente (`QThread`)
 ```python
         QThread.__init__(self)
 ```
-On créé les attributs de la fonction
+On créé les attributs de la classe
 ```python
         self.temps_choisi = temps_choisi
         self.temps_depart = 0.0
@@ -69,7 +70,7 @@ On créé les attributs de la fonction
         self.temps_debut_pause = 0.0
         self.temps_fin_pause = 0.0
 ```
-####Méthode principale `run`
+####Méthode principale `run`  
 Cette méthode correspond au corps du thread, qui est appelée lors du
 `.start()`, et dont la fin correspond à la fin de l'execution du thread
 ```python
@@ -93,7 +94,7 @@ On calcule le temps restant
 ```
 Si il est négatif, on le met à `0`, on met une dernière fois à
 jour le temps (signal `temps_change`), et on envoie un signal
-pour dire que le temps est fini (signal `temps_fini`)
+pour dire que le temps est fini (signal `temps_fini`)  
 Enfin, on termine la méthode (`return`)
 ```python
             if self.temps_restant <= 0.0:
@@ -136,51 +137,77 @@ Quand la boucle est cassée (quand `jeton_quitter` vaut `True`), on
 ```python
         self.finished.emit()
 ```
-####Méthode de pause `pauseT`
+####Méthode de pause `pauseT`  
 Cette méthode permet de mettre en pause le thread, en modifiant la
 valeur de l'attribut `jeton_pause` de `False` à `True`
 ```python
     def pauseT(self):
         self.jeton_pause = True
 ```
-####Méthode de pause `reprendreT`
+####Méthode de pause `reprendreT`  
 Cette méthode permet de reprendre le thread après une pause, en
 modifiant la valeur de l'attribut `jeton_pause` de `True` à `False`
 ```python
     def reprendreT(self):
         self.jeton_pause = False
 ```
-####Méthode permettant de quitter le timer `quitterT`
+####Méthode permettant de quitter le timer `quitterT`  
 Cette méthode permet de quitter le thread en modifiant la valeur de
-l'attribut `jeton_quitter` de `False` à `True`
+l'attribut `jeton_quitter` de `False` à `True`  
 Cela casse la boucle principale de la méthode `run` du thread
 ```python
     def quitterT(self):
         self.jeton_quitter = True
 ```
 ###Classe ModuleApplication
+Cette classe hérite des classes `QMainWindow` et `Ui_Module` et permet la 
+création du GUI et toute sa gestion.  
+Cette classe contient la majeure partie du programme du module  
+Elle est directement issue de *Qt* (et donc `PyQt`)
 ```python
 class ModuleApplication(QMainWindow, Ui_Module):
+```
+####Méthode d'initialisation `__init__`  
+Méthode permettant d'initialiser la classe
+```python
     def __init__(self, parent=None):
+```
+On hérite de la méthode `__init__` des classes parentes
+```python
         super(ModuleApplication, self).__init__(parent)
+```
+On initialise les widgets décris dans le fichier auxiliaire 
+`ui_module.py` créé avec *Qt Creator* et `PyQt`
+```python
         self.setupUi(self)
-
-        # Déclaration des globales
-
-        # Substitut de menu
+```
+**Ceci sera ensuite remplacé par le menu !**
+On ouvre le fichier de configuration `module.conf`
+```python
         fichier_conf_brut = open("module.conf", "r")
+```
+On lit le fichier et on récupère les paramètres suivants :
+- Temps choisi
+- Nom (ou chemin) du fichier qui contient le texte à taper
+```python
         fichier_conf = fichier_conf_brut.readlines()
         self.temps_choisi = float((fichier_conf[1])[:-1])
         nom_fichier_texte = (fichier_conf[3])[:-1]
+```
+On ouvre ensuite le fichier qui contient le texte à taper
+```python
         fichier_texte_brut = open(nom_fichier_texte, "r")
         self.texte = fichier_texte_brut.read().decode("utf-8")
-
-        # On enlève les retours à la ligne
+```
+On enlève les retours à la ligne (remplacés par des espaces) et les 
+doubles espaces de ce texte, impossible ou problématiques à taper 
+pour l'utilisateur
+```python
         self.texte = (self.texte.replace("\n", " ")).strip()
-        # On enlève les doubles espaces <-- A améliorer pour enlever les
-        # triples...
         self.texte = self.texte.replace("  ", " ")
-
+```
+On définit les attributs
+```python
         self.pos_texte = 0
         self.texte_d = self.texte[:self.pos_texte]
         self.texte_g = self.texte[(self.pos_texte + 1):]
@@ -193,14 +220,21 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.s_mots = 0.0
         self.temps_ecoule = 0.0
         self.score = 0.0
-
         self.car_justes = 0
         self.car_faux = 0
-
         self.reussite = 0.0
         self.erreurs = 0.0
-
+```
+On créé l'attribut `Timer`, qui est une instance du `ThreadTimer` 
+déclaré plus haut.  
+On lui passe en argument le temps choisi dans le fichier de 
+configuration
+```python
         self.Timer = ThreadTimer(self.temps_choisi)
+```
+On connecte le signal `finished` du timer à la fonction en charge de 
+le détruire proprement
+```python
         self.Timer.finished.connect(self.Timer.deleteLater)
 
         # On setup les widgets
