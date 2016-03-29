@@ -27,7 +27,7 @@ if not comm_l:
 pos = comm_l.index("ref_to_md")
 scomm = (comm_l[:pos]).strip()
 
-print(">>>{}<<<".format(scomm))
+print("Balise de commentaire identifiée : >>>{}<<<".format(scomm))
 
 file_s_b.close()
 
