@@ -38,13 +38,12 @@ La classe `ThreadTimer`, héritée de `QThread`, permet de lancer un timer en
 thread d'arrière plan, qui fonctionne tout seul (standalone)  
 On peut intéragir avec le timer grâce aux fonctions `pauseT`, `reprendreT` et
 `quitterT`
-```python
-class ThreadTimer(QThread):
-```
+
 ###En-tête de la classe
 On créé ici les signaux `pyqtSignal` permettant d'intéragir avec le GUI
 Ces signaux seront ensuite connectés au GUI avec la méthode `connect`
 ```python
+class ThreadTimer(QThread):
     temps_fini_signal = pyqtSignal()
     temps_change_signal = pyqtSignal(float)
     finished = pyqtSignal()

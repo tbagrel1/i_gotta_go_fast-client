@@ -31,12 +31,13 @@ import atexit
 #.##Classe `ThreadTimer`
 #.La classe `ThreadTimer`, héritée de `QThread`, permet de lancer un timer en
 #.thread d'arrière plan, qui fonctionne tout seul (standalone)  
-#.On peut intéragir avec le timer grâce aux fonctions `pauseT`, `reprendreT` et
+#.On peut intéragir avec le timer grâce aux méthodes `pauseT`, `reprendreT` et
 #.`quitterT`
+
+#.###En-tête de la classe
+#.On créé ici les signaux `pyqtSignal` permettant d'intéragir avec le GUI
+#.Ces signaux seront ensuite connectés au GUI avec la méthode `connect`
 class ThreadTimer(QThread):
-    #.###En-tête de la classe
-    #.On créé ici les signaux `pyqtSignal` permettant d'intéragir avec le GUI
-    #.Ces signaux seront ensuite connectés au GUI avec la méthode `connect`
     temps_fini_signal = pyqtSignal()
     temps_change_signal = pyqtSignal(float)
     finished = pyqtSignal()
@@ -44,7 +45,7 @@ class ThreadTimer(QThread):
     #.###Méthode d'initialisation `__init__`  
     #.Méthode permettant d'initialiser la classe
     def __init__(self, temps_choisi):
-        #.On hérite de la fonction `__init__` de la classe parente (`QThread`)
+        #.On hérite de la méthode `__init__` de la classe parente (`QThread`)
         QThread.__init__(self)
         #.On créé les attributs de la classe
         self.temps_choisi = temps_choisi
@@ -180,33 +181,33 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.On lui passe en argument le temps choisi dans le fichier de 
         #.configuration
         self.Timer = ThreadTimer(self.temps_choisi)
-        #.On connecte le signal `finished` du timer à la fonction en charge de 
+        #.On connecte le signal `finished` du timer à la méthode en charge de 
         #.le détruire proprement
         self.Timer.finished.connect(self.Timer.deleteLater)
 
-        #.On lance une première fois les fonctions `updateTexteLabel` et 
+        #.On lance une première fois les méthodes `updateTexteLabel` et 
         #.`temps_change` pour régler le GUI sur la position de départ
         self.updateTexteLabel()
         self.temps_change(self.temps_choisi)
 
         #.Quand le texte dans la boîte est changé (frappe de l'utilisateur), 
-        #.on appelle la fonction `getDerCar` en charge de récupérer la saisie
+        #.on appelle la méthode `getDerCar` en charge de récupérer la saisie
         self.EntryTapeCentre.textChanged.connect(self.getDerCar)
-        #.Quand on clique sur le bouton start/pause, on appelle la fonction 
+        #.Quand on clique sur le bouton start/pause, on appelle la méthode 
         #.`togglePauseM` en charge du basculement start/pause
         self.BoutonStartPause.clicked.connect(self.togglePauseM)
-        #.Quand on clique sur le bouton quitter, on appelle la fonction 
+        #.Quand on clique sur le bouton quitter, on appelle la méthode
         #.`quitterM` en charge de fermer proprement le timer avant de quitter 
         #.le GUI
         self.BoutonQuitter.clicked.connect(self.quitterM)
         #.On connecte les signaux du timer `temps_change` et `temps_fini` aux 
-        #.fonction du GUI associées, qui servent à interpréter quand le temps 
+        #.méthodes du GUI associées, qui servent à interpréter quand le temps 
         #.restant change et quand le temps est fini
         self.Timer.temps_change_signal.connect(self.temps_change)
         self.Timer.temps_fini_signal.connect(self.temps_fini)
 
         #.On désactive les widgets tant que l'utilisateur ne clique pas sur 
-        #.commencer
+        #.commencer ou qu'il ne tape pas de lettre
         self.LabelTexteDroite.setEnabled(False)
         self.LabelTexteCentre.setEnabled(False)
         self.LabelTexteGauche.setEnabled(False)
@@ -222,13 +223,13 @@ class ModuleApplication(QMainWindow, Ui_Module):
     @pyqtSlot(str)
     def getDerCar(self, ligne_tapee):
         #.On récupère le caractère tapé, on vide la boîte et appelle la 
-        #.fonction `interpreterDerCar` pour interpréter le caractère tapé
+        #.méthode `interpreterDerCar` pour interpréter le caractère tapé
         der_car_T = unicode(ligne_tapee)
         self.EntryTapeCentre.clear()
         self.interpreterDerCar(der_car_T)
         #.Si `jeton_pauseM` vaut `True` (le programme était en pause ou pas 
         #.encore commencé et l'utilisateur a tapé une lettre), on appelle 
-        #.la fonction `togglePauseM` pour désactiver la pause
+        #.la méthode `togglePauseM` pour désactiver la pause
         if self.jeton_pauseM:
             self.togglePauseM()
 
@@ -373,7 +374,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.###Méthode `reprendreM`
     #.Méthode permettant de reprendre après une pause du GUI
     def reprendreM(self):
-        #.On appelle la fonction `reprendreT` du timer pour enlever la pause 
+        #.On appelle la méthode `reprendreT` du timer pour enlever la pause 
         #.du timer
         self.Timer.reprendreT()
         #.On change le texte du bouton start/pause et on désactive la pause en 
@@ -439,7 +440,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.LabelTapeFleche.setStyleSheet("")
         self.LabelTapeFleche.setEnabled(False)
         #.On met la variable `jeton_temps_finiM` à `True` et on appelle la 
-        #.fonction `setUpRecommencer` pour repréparer le GUI pour un nouveau 
+        #.méthode `setUpRecommencer` pour repréparer le GUI pour un nouveau 
         #.lancement
         self.jeton_temps_finiM = True
         self.setUpRecommencer()
