@@ -36,7 +36,7 @@ import atexit
 ##Classe `ThreadTimer`
 La classe `ThreadTimer`, héritée de `QThread`, permet de lancer un timer en
 thread d'arrière plan, qui fonctionne tout seul (standalone)  
-On peut intéragir avec le timer grâce aux fonctions `pauseT`, `reprendreT` et
+On peut intéragir avec le timer grâce aux méthodes `pauseT`, `reprendreT` et
 `quitterT`
 
 ###En-tête de la classe
@@ -49,12 +49,10 @@ class ThreadTimer(QThread):
     finished = pyqtSignal()
 ```
 ###Méthode d'initialisation `__init__`  
-Méthode permettant d'initialiser la classe
+Méthode permettant d'initialiser la classe  
+On hérite de la méthode `__init__` de la classe parente (`QThread`)
 ```python
     def __init__(self, temps_choisi):
-```
-On hérite de la fonction `__init__` de la classe parente (`QThread`)
-```python
         QThread.__init__(self)
 ```
 On créé les attributs de la classe
@@ -71,22 +69,18 @@ On créé les attributs de la classe
 ```
 ###Méthode principale `run`  
 Cette méthode correspond au corps du thread, qui est appelée lors du
-`.start()`, et dont la fin correspond à la fin de l'execution du thread
-```python
-    def run(self):
-```
+`.start()`, et dont la fin correspond à la fin de l'execution du thread  
 On prend le temps lors du lancement et on désactive la pause
 ```python
+    def run(self):
         self.temps_depart = time()
         self.jeton_pause = False
 ```
 Tant que `jeton_quitter` est `False` (tant que l'on ne veut pas
-quitter)
-```python
-        while not self.jeton_quitter:
-```
+quitter)  
 On calcule le temps restant
 ```python
+        while not self.jeton_quitter:
             self.temps_inter = time()
             self.temps_ecoule = self.temps_inter - self.temps_depart
             self.temps_restant = self.temps_choisi - self.temps_ecoule
@@ -162,13 +156,11 @@ Cela casse la boucle principale de la méthode `run` du thread
 Cette classe hérite des classes `QMainWindow` et `Ui_Module` et permet la 
 création du GUI et toute sa gestion.  
 Cette classe contient la majeure partie du programme du module  
-Elle est directement issue de *Qt* (et donc `PyQt`)
-```python
-class ModuleApplication(QMainWindow, Ui_Module):
-```
+Elle est directement issue de *Qt* (et donc `PyQt`)  
 ###Méthode d'initialisation `__init__`  
 Méthode permettant d'initialiser la classe
 ```python
+class ModuleApplication(QMainWindow, Ui_Module):
     def __init__(self, parent=None):
 ```
 On hérite de la méthode `__init__` des classes parentes
@@ -180,7 +172,7 @@ On initialise les widgets décris dans le fichier auxiliaire
 ```python
         self.setupUi(self)
 ```
-**Ceci sera ensuite remplacé par le menu !**
+*Ceci sera ensuite remplacé par le menu !*
 On ouvre le fichier de configuration `module.conf`
 ```python
         fichier_conf_brut = open("module.conf", "r")
@@ -231,42 +223,42 @@ configuration
 ```python
         self.Timer = ThreadTimer(self.temps_choisi)
 ```
-On connecte le signal `finished` du timer à la fonction en charge de 
+On connecte le signal `finished` du timer à la méthode en charge de 
 le détruire proprement
 ```python
         self.Timer.finished.connect(self.Timer.deleteLater)
 ```
-On lance une première fois les fonctions `updateTexteLabel` et 
+On lance une première fois les méthodes `updateTexteLabel` et 
 `temps_change` pour régler le GUI sur la position de départ
 ```python
         self.updateTexteLabel()
         self.temps_change(self.temps_choisi)
 ```
 Quand le texte dans la boîte est changé (frappe de l'utilisateur), 
-on appelle la fonction `getDerCar` en charge de récupérer la saisie
+on appelle la méthode `getDerCar` en charge de récupérer la saisie
 ```python
         self.EntryTapeCentre.textChanged.connect(self.getDerCar)
 ```
-Quand on clique sur le bouton start/pause, on appelle la fonction 
+Quand on clique sur le bouton start/pause, on appelle la méthode 
 `togglePauseM` en charge du basculement start/pause
 ```python
         self.BoutonStartPause.clicked.connect(self.togglePauseM)
 ```
-Quand on clique sur le bouton quitter, on appelle la fonction 
+Quand on clique sur le bouton quitter, on appelle la méthode
 `quitterM` en charge de fermer proprement le timer avant de quitter 
 le GUI
 ```python
         self.BoutonQuitter.clicked.connect(self.quitterM)
 ```
 On connecte les signaux du timer `temps_change` et `temps_fini` aux 
-fonction du GUI associées, qui servent à interpréter quand le temps 
+méthodes du GUI associées, qui servent à interpréter quand le temps 
 restant change et quand le temps est fini
 ```python
         self.Timer.temps_change_signal.connect(self.temps_change)
         self.Timer.temps_fini_signal.connect(self.temps_fini)
 ```
 On désactive les widgets tant que l'utilisateur ne clique pas sur 
-commencer
+commencer ou qu'il ne tape pas de lettre
 ```python
         self.LabelTexteDroite.setEnabled(False)
         self.LabelTexteCentre.setEnabled(False)
@@ -287,7 +279,7 @@ suite à un signal `textChanged`
     def getDerCar(self, ligne_tapee):
 ```
 On récupère le caractère tapé, on vide la boîte et appelle la 
-fonction `interpreterDerCar` pour interpréter le caractère tapé
+méthode `interpreterDerCar` pour interpréter le caractère tapé
 ```python
         der_car_T = unicode(ligne_tapee)
         self.EntryTapeCentre.clear()
@@ -295,21 +287,19 @@ fonction `interpreterDerCar` pour interpréter le caractère tapé
 ```
 Si `jeton_pauseM` vaut `True` (le programme était en pause ou pas 
 encore commencé et l'utilisateur a tapé une lettre), on appelle 
-la fonction `togglePauseM` pour désactiver la pause
+la méthode `togglePauseM` pour désactiver la pause
 ```python
         if self.jeton_pauseM:
             self.togglePauseM()
 ```
 ###Méthode `interpreterDerCar`
 Méthode permettant d'interpréter le caractère tapé à la suite de la 
-méthode `getDerCar`
-```python
-    def interpreterDerCar(self, der_car_T):
-```
+méthode `getDerCar`  
 On vérifie que le texte tapé n'est pas nul (car les méthodes 
 `getDerCar` et `interpreterDerCar` se déclenchent après le `clear`
  de la boîte)
 ```python
+    def interpreterDerCar(self, der_car_T):
         if der_car_T != "":
 ```
 Si le caractère tapé est bien le caractère attendu :  
@@ -330,32 +320,26 @@ On ajoute 1 aux caractères faux et on met en rouge les flèches
                 self.rouge()
 ```
 ###Méthode `vert`
-Méthode permettant de mettre en vert les flèches (`LabelTapeFleche`)
-```python
-    def vert(self):
-```
+Méthode permettant de mettre en vert les flèches (`LabelTapeFleche`)  
 On définit la couleur de police à `green`
 ```python
+    def vert(self):
         self.LabelTapeFleche.setStyleSheet("color: green")
 ```
 ###Méthode `rouge`
-Méthode permettant de mettre en rouge les flèches (`LabelTapeFleche`)
-```python
-    def rouge(self):
-```
+Méthode permettant de mettre en rouge les flèches (`LabelTapeFleche`)  
 On définit la couleur de police à `red`
 ```python
+    def rouge(self):
         self.LabelTapeFleche.setStyleSheet("color: red")
 ```
 ###Méthode `decalerTexte`
-Méthode permettant de décaler le texte (au niveau des variables)
-```python
-    def decalerTexte(self):
-```
+Méthode permettant de décaler le texte (au niveau des variables)  
 On avance de 1 la variable `pos_texte` ;  
 On actualise les variables `texte_d`, `texte_g` et `car_attendu`
 en fonction de la nouvelle valeur de `pos_texte`  
 ```python
+    def decalerTexte(self):
         self.pos_texte += 1
         self.texte_d = self.texte[:self.pos_texte]
         self.car_attendu = self.texte[self.pos_texte]
@@ -373,13 +357,11 @@ Enfin, on met à jour les labels
 ```
 ###Méthode `updateTexteLabel`
 Méthode permettant de mettre à jour le texte des labels du GUI (et donc 
-décaler le texte au niveau du GUI)
-```python
-    def updateTexteLabel(self):
-```
+décaler le texte au niveau du GUI)  
 La variable `texte_aff_droite` correspond à `texte_d` recoupé si 
 besoin à la longueur maximum du label (22 caractères)
 ```python
+    def updateTexteLabel(self):
         texte_aff_droite = self.texte_d
         if len(texte_aff_droite) > 22:
             texte_aff_droite = texte_aff_droite[-22:]
@@ -411,24 +393,20 @@ variables évoqués ci-dessus
         self.LabelTapeDroit.setText(texte_aff_basdroite)
 ```
 ###Méthode (slot) `togglePauseM`
-Méthode permettant d'activer/désactiver la pause
-```python
-    @pyqtSlot()
-    def togglePauseM(self):
-```
+Méthode permettant d'activer/désactiver la pause  
 Si le temps est fini, le bouton start/pause permet recommencer 
 (méthode `recommencer`)
 ```python
+    @pyqtSlot()
+    def togglePauseM(self):
         if self.jeton_temps_finiM:
             self.recommencer()
 ```
-Si le temps n'est pas fini, et que c'est le premier lancement :
-```python
-        elif self.premier_lancement_timer:
-```
+Si le temps n'est pas fini, et que c'est le premier lancement :  
 On désactive la pause (`jeton_pauseM`) et le drapeau de premier 
 lancement (`premier_lancement_timer`)  
 ```python
+        elif self.premier_lancement_timer:
             self.premier_lancement_timer = False
             self.jeton_pauseM = False
 ```
@@ -448,13 +426,12 @@ Et on active le focus sur la boîte de texte
             self.EntryTapeCentre.setFocus()
             self.LabelTapeFleche.setEnabled(True)
 ```
-Si le temps n'est pas fini et que ce n'est pas le premier lancement :
-```python
-        else:
-```
+Si le temps n'est pas fini et que ce n'est pas le premier 
+lancement :  
 Si `jeton_pause_M` vaut `False` (pas de pause), on lance la 
 pause (méthode `pauseM`)
 ```python
+        else:
             if not self.jeton_pauseM:
                 self.pauseM()
 ```
@@ -465,12 +442,10 @@ Sinon (pause active), on désactive la pause (méthode
                 self.reprendreM()
 ```
 Méthode `pauseM`
-Méthode permettant de mettre en pause le GUI
-```python
-    def pauseM(self):
-```
+Méthode permettant de mettre en pause le GUI  
 On appelle la méthode `pauseT` du timer pour le mettre en pause
 ```python
+    def pauseM(self):
         self.Timer.pauseT()
 ```
 On change le texte du bouton start/pause et on active la pause en 
@@ -496,13 +471,11 @@ sauvegarde, on on met les flèches en couleur par défaut (noir)
         self.LabelTapeFleche.setStyleSheet("")
 ```
 ###Méthode `reprendreM`
-Méthode permettant de reprendre après une pause du GUI
-```python
-    def reprendreM(self):
-```
-On appelle la fonction `reprendreT` du timer pour enlever la pause 
+Méthode permettant de reprendre après une pause du GUI  
+On appelle la méthode `reprendreT` du timer pour enlever la pause 
 du timer
 ```python
+    def reprendreM(self):
         self.Timer.reprendreT()
 ```
 On change le texte du bouton start/pause et on désactive la pause en 
@@ -528,14 +501,12 @@ grâce à la valeur sauvegardée
 ```
 ###Méthode (slot) `quitterM`
 Méthode permettant de quitter proprement le programme en fermant d'abord 
-le timer
-```python
-    @pyqtSlot()
-    def quitterM(self):
-```
+le timer  
 On appelle la méthode `quitterT` du timer pour le fermer, et on 
 attend qu'il se ferme
 ```python
+    @pyqtSlot()
+    def quitterM(self):
         self.Timer.quitterT()
         self.Timer.wait()
 ```
@@ -545,14 +516,12 @@ Enfin, on ferme le programme
 ```
 ###Méthode (slot) `temps_change`
 Méthode permettant de mettre à jour le temps affiché lors de l'émission 
-du signal `temps_change_signal`
-```python
-    @pyqtSlot(float)
-    def temps_change(self, temps_restant):
-```
+du signal `temps_change_signal`  
 On récupère la valeur de `temps_restant` portée par le signal qui 
 appel ce slot (cette méthode)
 ```python
+    @pyqtSlot(float)
+    def temps_change(self, temps_restant):
         self.temps_restant = temps_restant
 ```
 On met alors à jour l'affichage du temps restant et la barre 
@@ -572,14 +541,12 @@ statistiques
 ```
 ###Méthode (slot) `temps_fini`
 Méthode appelée lorsque le temps est fini et permettant de paramètrer le 
-GUI pour un enventuel nouveau lancement (si l'utilisateur recommence)
-```python
-    @pyqtSlot()
-    def temps_fini(self):
-```
+GUI pour un enventuel nouveau lancement (si l'utilisateur recommence)  
 On désactive tous les labels et on remet la couleur des flèches par 
 défaut (noir)
 ```python
+    @pyqtSlot()
+    def temps_fini(self):
         self.LabelTexteDroite.setEnabled(False)
         self.LabelTexteCentre.setEnabled(False)
         self.LabelTexteGauche.setEnabled(False)
@@ -589,50 +556,42 @@ défaut (noir)
         self.LabelTapeFleche.setEnabled(False)
 ```
 On met la variable `jeton_temps_finiM` à `True` et on appelle la 
-fonction `setUpRecommencer` pour repréparer le GUI pour un nouveau 
+méthode `setUpRecommencer` pour repréparer le GUI pour un nouveau 
 lancement
 ```python
         self.jeton_temps_finiM = True
         self.setUpRecommencer()
 ```
 ###Méthode `setUpRecommencer`
-Méthode permettant de reparamétrer le GUI pour un nouveau lancement
-```python
-    def setUpRecommencer(self):
-```
+Méthode permettant de reparamétrer le GUI pour un nouveau lancement  
 On change le texte du bouton start/pause
 ```python
+    def setUpRecommencer(self):
         self.BoutonStartPause.setText("Recommencer")
 ```
 ###Méthode `recommencer`
-Méthode permettant de recommencer
-```python
-    def recommencer(self):
-```
+Méthode permettant de recommencer  
 À faire
 ```python
+    def recommencer(self):
         pass
 ```
 ###Méthode `genererStats`
-Méthode permettant de générer les statistiques
-```python
-    def genererStats(self):
-```
+Méthode permettant de générer les statistiques  
 On appelle les méthodes `compterMots`, `compterJusteErreur` et 
 `compterScore` en charge des calculs des statistiques
 ```python
+    def genererStats(self):
         self.compterMots()
         self.compterJusteErreur()
         self.compterScore()
 ```
 ###Méthode `compterMots`
 Méthode permettant de compter le nombre de mots tapés et de calculer 
-ensuite le temps moyen mis pour taper un mot (`s_mots`)
-```python
-    def compterMots(self):
-```
+ensuite le temps moyen mis pour taper un mot (`s_mots`)  
 On calcule le nombre de mots tapés à partir de la valeur de `texte_d`
 ```python
+    def compterMots(self):
         nombre_mots = len((self.texte_d).split(" ")) - 1
         self.LabelScoreV.setText(unicode(str(nombre_mots)))
 ```
@@ -651,12 +610,10 @@ cette valeur dans le GUI
 ###Méthode `compterJusteErreur`
 Méthode permettant de calculer et d'afficher dans les barres 
 horizontales le pourcentage de caractères justes et faux (réussite et 
-erreurs)
-```python
-    def compterJusteErreur(self):
-```
+erreurs)  
 On définit la somme, supérieure à 1, des caractères justes et faux
 ```python
+    def compterJusteErreur(self):
         somme = self.car_justes + self.car_faux
         if somme == 0:
             somme = 1
@@ -675,13 +632,11 @@ les deux valeurs que l'on vient de calculer
 ```
 ###Méthode `compterScore`
 Méthode permettant de calculer le score selon la formule impliquant la 
-vitesse, la précision, l'endurance, le temps choisi et l'avancement
-```python
-    def compterScore(self):
-```
+vitesse, la précision, l'endurance, le temps choisi et l'avancement  
 On calcule l'avancement comme étant le rapport du temps écoulé sur 
 le temps total
 ```python
+    def compterScore(self):
         avancement = self.temps_ecoule / self.temps_choisi
         s_mots_mod = self.s_mots
 ```
@@ -723,12 +678,10 @@ proche de ce score
 
 ##Fonction `main`
 Fonction prenant en argument (futur) les valeurs choisies dans le menu, et 
-permettant de créér l'interface et de la lancer
-```python
-def main():
-```
+permettant de créér l'interface et de la lancer  
 On créé une application *Qt* `Qapplication`, pour porter notre GUI
 ```python
+def main():
     app = QApplication(sys.argv)
 ```
 On créé notre GUI comme étant une instance de la classe 
@@ -744,12 +697,10 @@ programmme
 ```
 ##Test de lancement standalone
 Test permettant de lancer le programme si il est exécuté directement tout 
-seul, sans import
-```python
-if __name__ == "__main__":
-```
+seul, sans import  
 On appelle la fonction `main` définit plus haut avec des paramètres 
 (futurs) par défaut
 ```python
+if __name__ == "__main__":
     main()
 ```
