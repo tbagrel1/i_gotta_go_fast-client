@@ -480,8 +480,12 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.Méthode permettant de générer les statistiques
     def genererStats(self):
         #.On appelle les différentes méthodes en charge des statistiques
+        self.compterMots()
+        self.compterCar()
+        self.compterJusteErreur()
+        self.compterScore()
 
--> Trigerred par textChanged
+#-> Trigerred par textChanged
     #.###Méthode `compterMots`
     #.Méthode permettant de compter le nombre de mots tapés et de calculer 
     #.ensuite le temps moyen mis pour taper un mot (`s_mots`)
@@ -495,9 +499,12 @@ class ModuleApplication(QMainWindow, Ui_Module):
             #.dans l'interface
             self.temps_ecoule = self.temps_choisi - self.temps_restant
             self.mots_min = nombre_mots / (self.temps_ecoule / 60.0)
-            self.LabelSMotsV.setText(unicode(str(round(self.mots_min, 1))))
+            self.LabelMotsMinV.setText(unicode(str(round(self.mots_min, 1))))
 
--> Trigerred par textChanged
+    def compterCar(self):
+        pass
+
+#-> Trigerred par textChanged
     #.###Méthode `compterJusteErreur`
     #.Méthode permettant de calculer et d'afficher dans les barres 
     #.horizontales le pourcentage de caractères justes et faux (réussite et 
@@ -516,7 +523,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.BarreReussite.setValue(round(self.reussite * 100, 0))
         self.BarreErreurs.setValue(round(self.erreurs * 100, 0))
 
--> Trigerred par textChanged
+#-> Trigerred par textChanged
     #.###Méthode `compterScore`
     #.Méthode permettant de calculer le score selon la formule impliquant la 
     #.vitesse, la précision, l'endurance, le temps choisi et l'avancement
