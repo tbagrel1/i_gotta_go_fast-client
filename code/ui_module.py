@@ -178,6 +178,7 @@ class Ui_Module(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.LabelCarMin.setFont(font)
+        self.LabelCarMin.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.LabelCarMin.setObjectName(_fromUtf8("LabelCarMin"))
         self.SFrame1Saisie = QtGui.QGraphicsView(self.Fenetre)
         self.SFrame1Saisie.setGeometry(QtCore.QRect(20, 20, 1161, 111))

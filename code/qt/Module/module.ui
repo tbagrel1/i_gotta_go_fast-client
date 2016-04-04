@@ -454,6 +454,9 @@
      <property name="text">
       <string>Caractères / min</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
     </widget>
    </widget>
    <widget class="QGraphicsView" name="SFrame1Saisie">
