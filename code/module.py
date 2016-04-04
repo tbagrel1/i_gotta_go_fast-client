@@ -154,11 +154,13 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
         #.On enlève les retours à la ligne (remplacés par des espaces) et les 
         #.doubles espaces de ce texte, impossible ou problématiques à taper 
-        #.pour l'utilisateur
+        #.pour l'utilisateur  
+        #.*A corriger avec des regex*
         self.texte = (self.texte.replace("\n", " ")).strip()
         self.texte = self.texte.replace("  ", " ")
 
         #.On définit les attributs
+        self.recommencerV = False
         self.pos_texte = 0
         self.texte_d = self.texte[:self.pos_texte]
         self.texte_g = self.texte[(self.pos_texte + 1):]
@@ -186,6 +188,18 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
         #.On lance une première fois les méthodes `updateTexteLabel` et 
         #.`temps_change` pour régler le GUI sur la position de départ
+
+        #.On fixe la police des labels en police à chasse fixe (monospace)  
+        #.Cela permet d'éviter l'erreur avec Windows qui ne reconnait pas la 
+        #.police "Monospace"
+        Police = QFont("Monospace", 30)
+        Police.setStyleHint(QFont.TypeWriter)
+        self.LabelTexteDroite.setFont(Police)
+        self.LabelTexteCentre.setFont(Police)
+        self.LabelTexteGauche.setFont(Police)
+        self.LabelTapeDroit.setFont(Police)
+        self.EntryTapeCentre.setFont(Police)
+        self.LabelTapeFleche.setFont(Police)
         self.updateTexteLabel()
         self.temps_change(self.temps_choisi)
 
@@ -455,7 +469,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.Méthode permettant de recommencer  
         #.À faire
     def recommencer(self):
-        pass
+        self.recommencerV = True
+        self.quitterM()
 
     #.###Méthode `genererStats`
     #.Méthode permettant de générer les statistiques  
@@ -552,7 +567,10 @@ def main():
     #.On affiche notre GUI et on connecte sa fermeture à la fermeture du 
     #.programmme
     myapp.show()
-    sys.exit(app.exec_())
+    app.exec_()
+    #.Si l'utilisateur veut recommencer, on réappelle la fonction `main`
+    if myapp.recommencerV:
+        main()
 
 #.##Test de lancement standalone
 #.Test permettant de lancer le programme si il est exécuté directement tout 
