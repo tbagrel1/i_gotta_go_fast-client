@@ -173,13 +173,14 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.premier_lancement_timer = True
         self.couleur_backup = ""
         self.jeton_temps_finiM = False
-        self.s_mots = 0.0
+        self.mots_min = 0.0
         self.temps_ecoule = 0.0
         self.score = 0.0
         self.car_justes = 0
         self.car_faux = 0
         self.reussite = 0.0
         self.erreurs = 0.0
+        self.nombre_mots_precedant = 0
         #.On créé l'attribut `Timer`, qui est une instance du `ThreadTimer` 
         #.déclaré plus haut.  
         #.On lui passe en argument le temps choisi dans le fichier de 
@@ -202,7 +203,6 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.LabelTexteGauche.setFont(Police)
         self.LabelTapeDroit.setFont(Police)
         self.EntryTapeCentre.setFont(Police)
-        self.LabelTapeFleche.setFont(Police)
         self.updateTexteLabel()
         self.temps_change(self.temps_choisi)
 
@@ -479,12 +479,9 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.###Méthode `genererStats`
     #.Méthode permettant de générer les statistiques
     def genererStats(self):
-        #.On appelle les méthodes `compterMots`, `compterJusteErreur` et 
-        #.`compterScore` en charge des calculs des statistiques
-        self.compterMots()
-        self.compterJusteErreur()
-        self.compterScore()
+        #.On appelle les différentes méthodes en charge des statistiques
 
+-> Trigerred par textChanged
     #.###Méthode `compterMots`
     #.Méthode permettant de compter le nombre de mots tapés et de calculer 
     #.ensuite le temps moyen mis pour taper un mot (`s_mots`)
@@ -493,14 +490,14 @@ class ModuleApplication(QMainWindow, Ui_Module):
         nombre_mots = len((self.texte_d).split(" ")) - 1
         self.LabelScoreV.setText(unicode(str(nombre_mots)))
         #.On définit le nombre de mots tapés comme étant supérieur à 1
-        if nombre_mots <= 1:
-            nombre_mots = 1
-        #.Enfin, on calcule le temps par mot moyen (`s_mots`), et on affiche 
-        #.cette valeur dans le GUI
-        self.temps_ecoule = self.temps_choisi - self.temps_restant
-        self.s_mots = self.temps_ecoule / nombre_mots
-        self.LabelSMotsV.setText(unicode(str(round(self.s_mots, 2))))
+        if nombre_mots > self.nombre_mots_precedant:
+            #.On calcule le nombre de mots tapés par minite et on l'affiche 
+            #.dans l'interface
+            self.temps_ecoule = self.temps_choisi - self.temps_restant
+            self.mots_min = nombre_mots / (self.temps_ecoule / 60.0)
+            self.LabelSMotsV.setText(unicode(str(round(self.mots_min, 1))))
 
+-> Trigerred par textChanged
     #.###Méthode `compterJusteErreur`
     #.Méthode permettant de calculer et d'afficher dans les barres 
     #.horizontales le pourcentage de caractères justes et faux (réussite et 
@@ -519,38 +516,14 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.BarreReussite.setValue(round(self.reussite * 100, 0))
         self.BarreErreurs.setValue(round(self.erreurs * 100, 0))
 
-    #.###A refaire complétement !!!
+-> Trigerred par textChanged
     #.###Méthode `compterScore`
     #.Méthode permettant de calculer le score selon la formule impliquant la 
     #.vitesse, la précision, l'endurance, le temps choisi et l'avancement
     def compterScore(self):
-        #.On calcule l'avancement comme étant le rapport du temps écoulé sur 
-        #.le temps total
-        avancement = self.temps_ecoule / self.temps_choisi
-        s_mots_mod = self.s_mots
+        #.A faire
 
-        #.On calcule l'inverse de la vitesse comme étant l'inverse de `s_mots` 
-        #.différent de 0 (pour éviter la division par 0)
-        if s_mots_mod == 0:
-            s_mots_mod = 1
-        inv_vitesse = 1 / s_mots_mod
-
-        #.On calcule le logarithme népérien de l'inverse du ratio d'erreurs 
-        #.supérieur à 0.001
-        erreurs_mod = self.erreurs
-        if erreurs_mod < 0.001:
-            erreurs_mod = 0.001
-        ln_inv_erreurs = log(1 / erreurs_mod)
-
-        #.On calcule la somme du logarithme népérien du temps choisi et d'une 
-        #.constante qui vaut ici 5 (à éventuellement modifier)
-        ln_temps_plusC = log(self.temps_choisi / 60) + 5
-
-        #.Enfin, on calcule le produit de tous ces facteurs, on multiplie le 
-        #.résultat par 100 et on affiche la valeur arrondie à l'entier le plus 
-        #.proche de ce score
-        self.score = avancement * inv_vitesse * ln_inv_erreurs *\
-            ln_temps_plusC * 100
+        #.On affiche le score arrondi à l'entier le plus proche dans le GUI
         self.LabelScoreV.setText(unicode(str(int(round(self.score, 0)))))
 
 #.#Programme principal
