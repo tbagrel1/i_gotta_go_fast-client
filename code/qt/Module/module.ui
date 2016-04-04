@@ -253,9 +253,9 @@
     <widget class="QLabel" name="LabelSMots">
      <property name="geometry">
       <rect>
-       <x>190</x>
+       <x>170</x>
        <y>200</y>
-       <width>71</width>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
@@ -265,7 +265,7 @@
       </font>
      </property>
      <property name="text">
-      <string>s / Mots</string>
+      <string>Mots / min</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
