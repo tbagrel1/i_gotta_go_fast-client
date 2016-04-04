@@ -141,8 +141,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.setupUi(self)
 
         #.---------------------------------------------------------------------
-        #.*A remplacer* !!  
-        #.*Ceci sera ensuite remplacé par le menu !*  
+        #.*A remplacer : Ceci sera ensuite remplacé par le menu !*  
         #.On ouvre le fichier de configuration `module.conf`
         fichier_conf_brut = open("module.conf", "r")
         #.On lit le fichier et on récupère les paramètres suivants :
@@ -174,6 +173,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.couleur_backup = ""
         self.jeton_temps_finiM = False
         self.mots_min = 0.0
+        self.car_min = 0.0
         self.temps_ecoule = 0.0
         self.score = 0.0
         self.car_justes = 0
@@ -270,6 +270,9 @@ class ModuleApplication(QMainWindow, Ui_Module):
             else:
                 self.car_faux += 1
                 self.rouge()
+            #.Enfin, on appelle la méthode `genererStats` pour mettre à jour 
+            #.les statistiques
+            self.genererStats()
 
     #.###Méthode `vert`
     #.Méthode permettant de mettre en vert les flèches (`LabelTapeFleche`)
@@ -438,9 +441,6 @@ class ModuleApplication(QMainWindow, Ui_Module):
                                            round(self.temps_choisi, 1))))
         self.BarreAvancement.setValue(int(round((self.temps_restant /
                                                  self.temps_choisi) * 100, 0)))
-        #.Enfin, on appelle la méthode `genererStats` pour mettre à jour les 
-        #.statistiques
-        self.genererStats()
 
     #.###Méthode (slot) `temps_fini`
     #.Méthode appelée lorsque le temps est fini et permettant de paramètrer le 
@@ -485,26 +485,33 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.compterJusteErreur()
         self.compterScore()
 
-#-> Trigerred par textChanged
     #.###Méthode `compterMots`
     #.Méthode permettant de compter le nombre de mots tapés et de calculer 
-    #.ensuite le temps moyen mis pour taper un mot (`s_mots`)
+    #.ensuite le temps moyen mis pour taper un mot (`mots_min`)
     def compterMots(self):
         #.On calcule le nombre de mots tapés à partir de la valeur de `texte_d`
         nombre_mots = len((self.texte_d).split(" ")) - 1
         self.LabelScoreV.setText(unicode(str(nombre_mots)))
         #.On définit le nombre de mots tapés comme étant supérieur à 1
         if nombre_mots > self.nombre_mots_precedant:
+            #.On change l'ancienne valeur de `nombre_mots_precedant`
+            self.nombre_mots_precedant = nombre_mots
             #.On calcule le nombre de mots tapés par minite et on l'affiche 
             #.dans l'interface
             self.temps_ecoule = self.temps_choisi - self.temps_restant
             self.mots_min = nombre_mots / (self.temps_ecoule / 60.0)
             self.LabelMotsMinV.setText(unicode(str(round(self.mots_min, 1))))
 
+    #.###Méthode `compterCar`
+    #.Méthode permettant de compter et d'afficher le nombre de caractères 
+    #.tapés à la minute (`car_min`)
     def compterCar(self):
-        pass
+        #.A faire
 
-#-> Trigerred par textChanged
+        #.On affiche le nombre de caractères tapés par minute, arrondi à 
+        #.l'entier le plus proche
+        self.LabelCarMinV.setText(unicode(str(int(round(self.car_min, 0)))))
+
     #.###Méthode `compterJusteErreur`
     #.Méthode permettant de calculer et d'afficher dans les barres 
     #.horizontales le pourcentage de caractères justes et faux (réussite et 
@@ -523,10 +530,9 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.BarreReussite.setValue(round(self.reussite * 100, 0))
         self.BarreErreurs.setValue(round(self.erreurs * 100, 0))
 
-#-> Trigerred par textChanged
     #.###Méthode `compterScore`
-    #.Méthode permettant de calculer le score selon la formule impliquant la 
-    #.vitesse, la précision, l'endurance, le temps choisi et l'avancement
+    #.Méthode permettant de calculer le score selon la nouvelle formule  
+    #.*À détailler*
     def compterScore(self):
         #.A faire
 
