@@ -85,14 +85,14 @@ class ThreadTimer(QThread):
             #.fait hiberner le programme pendant `0,1` s
             else:
                 self.temps_change_signal.emit(self.temps_restant)
-                sleep(0.1)
+                sleep(0.01)
             #.Si la pause est activée, on prend le temps de début de pause  
             #.Ensuite, tant que la pause est activée et que le timer ne doit 
             #.pas être quitté, le programme hiberne par pas de `0,1` s
             if self.jeton_pause:
                 self.temps_debut_pause = time()
                 while self.jeton_pause and not self.jeton_quitter:
-                    sleep(0.1)
+                    sleep(0.01)
                 #.Quand on sort de la boucle (pause terminée), on prend le
                 #.temps de fin de pause, on calcule le temps passé en pause,
                 #.et on ajoute cette durée au temps de lancement
@@ -167,6 +167,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.texte_d = self.texte[:self.pos_texte]
         self.texte_g = self.texte[(self.pos_texte + 1):]
         self.car_attendu = self.texte[self.pos_texte]
+        self.der_car_T = ""
+        self.dernier_juste = False
         self.jeton_pauseM = True
         self.temps_restant = 0.0
         self.premier_lancement_timer = True
@@ -176,11 +178,17 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.car_min = 0.0
         self.temps_ecoule = 0.0
         self.score = 0.0
+        self.temps_score_precedant = 0.0
+        self.C_TEMPS = 5
+        self.C_SCORE = 10
         self.car_justes = 0
         self.car_faux = 0
+        self.car_faux_precedant = 0
         self.reussite = 0.0
         self.erreurs = 0.0
         self.nombre_mots_precedant = 0
+        self.historique_tape = []
+        self.car_attendu_precedant = ""
         #.On créé l'attribut `Timer`, qui est une instance du `ThreadTimer` 
         #.déclaré plus haut.  
         #.On lui passe en argument le temps choisi dans le fichier de 
@@ -240,9 +248,9 @@ class ModuleApplication(QMainWindow, Ui_Module):
     def getDerCar(self, ligne_tapee):
         #.On récupère le caractère tapé, on vide la boîte et appelle la 
         #.méthode `interpreterDerCar` pour interpréter le caractère tapé
-        der_car_T = unicode(ligne_tapee)
+        self.der_car_T = ligne_tapee
+        self.interpreterDerCar()
         self.EntryTapeCentre.clear()
-        self.interpreterDerCar(der_car_T)
         #.Si `jeton_pauseM` vaut `True` (le programme était en pause ou pas 
         #.encore commencé et l'utilisateur a tapé une lettre), on appelle 
         #.la méthode `togglePauseM` pour désactiver la pause
@@ -251,25 +259,36 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
     #.###Méthode `interpreterDerCar`
     #.Méthode permettant d'interpréter le caractère tapé à la suite de la 
-    #.méthode `getDerCar`  
-    def interpreterDerCar(self, der_car_T):
+    #.méthode `getDerCar`
+    def interpreterDerCar(self):
         #.On vérifie que le texte tapé n'est pas nul (car les méthodes 
         #.`getDerCar` et `interpreterDerCar` se déclenchent après le `clear`
         #. de la boîte)
-        if der_car_T != "":
+        if self.der_car_T != "":
             #.Si le caractère tapé est bien le caractère attendu :  
             #.On appelle la méthode `decalerTexte`, on ajoute 1 aux caractères 
             #.justes et on met en vert les flèches (méthode `vert`)
-            if der_car_T == self.car_attendu:
-                self.decalerTexte()
+            self.der_car_T = self.der_car_T[0]
+            if self.der_car_T == self.car_attendu:
+                self.dernier_juste = True
+                self.car_attendu_precedant = self.car_attendu
                 self.car_justes += 1
                 self.vert()
+                self.decalerTexte()
             #.Sinon :  
             #.On ajoute 1 aux caractères faux et on met en rouge les flèches
             #.(méthode `rouge`)
             else:
+                self.dernier_juste = False
                 self.car_faux += 1
                 self.rouge()
+                # Format : (temps_mis_pour_car_juste, car à taper, car tapé,
+                # points_récoltés, erreurs faîtes avant (-1 si erreur))
+                self.historique_tape.append((0.0,
+                                             self.car_attendu.encode("utf8"),
+                                             str(self.der_car_T.toUtf8()),
+                                             0.0,
+                                             -1))
             #.Enfin, on appelle la méthode `genererStats` pour mettre à jour 
             #.les statistiques
             self.genererStats()
@@ -342,9 +361,10 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.Si le temps n'est pas fini, et que c'est le premier lancement :  
         elif self.premier_lancement_timer:
             #.On désactive la pause (`jeton_pauseM`) et le drapeau de premier 
-            #.lancement (`premier_lancement_timer`)  
+            #.lancement (`premier_lancement_timer`)
             self.premier_lancement_timer = False
             self.jeton_pauseM = False
+            self.temps_score_precedant = time() - 0.5
             #.On lance ensuite le timer pour la première fois ;  
             self.Timer.start()
             #.On change le texte du bouton start/pause ;  
@@ -376,7 +396,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.Timer.pauseT()
         #.On change le texte du bouton start/pause et on active la pause en 
         #.passant `jeton_pauseM` à `True`
-        self.BoutonStartPause.setText("Reprendre")
+        self.BoutonStartPause.setText(u"Reprendre")
         self.jeton_pauseM = True
         #.On désactive ensuite les différents labels en gardant le focus sur 
         #.la boîte de texte
@@ -399,7 +419,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.Timer.reprendreT()
         #.On change le texte du bouton start/pause et on désactive la pause en 
         #.passant `jeton_pauseM` à `False`
-        self.BoutonStartPause.setText("Pause")
+        self.BoutonStartPause.setText(u"Pause")
         self.jeton_pauseM = False
         #.On réactive les labels précédemments désactivés durant la pause en 
         #.gardant le focus sur la boîte de texte
@@ -466,7 +486,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.Méthode permettant de reparamétrer le GUI pour un nouveau lancement
     def setUpRecommencer(self):
         #.On change le texte du bouton start/pause
-        self.BoutonStartPause.setText("Recommencer")
+        self.BoutonStartPause.setText(u"Recommencer")
 
     #.###Méthode `recommencer`
     #.Méthode permettant de recommencer
@@ -480,25 +500,26 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.Méthode permettant de générer les statistiques
     def genererStats(self):
         #.On appelle les différentes méthodes en charge des statistiques
-        self.compterMots()
-        self.compterCar()
-        self.compterJusteErreur()
-        self.compterScore()
+        self.temps_ecoule = self.temps_choisi - self.temps_restant
+        if not self.temps_ecoule == 0:
+            self.compterMots()
+            self.compterCar()
+            self.compterJusteErreur()
+            self.compterScore()
 
     #.###Méthode `compterMots`
     #.Méthode permettant de compter le nombre de mots tapés et de calculer 
     #.ensuite le temps moyen mis pour taper un mot (`mots_min`)
     def compterMots(self):
         #.On calcule le nombre de mots tapés à partir de la valeur de `texte_d`
-        nombre_mots = len((self.texte_d).split(" ")) - 1
-        self.LabelScoreV.setText(unicode(str(nombre_mots)))
+        texte_mod = self.texte_d.replace("'", " ")
+        nombre_mots = len((texte_mod).split(" ")) - 1
         #.On définit le nombre de mots tapés comme étant supérieur à 1
         if nombre_mots > self.nombre_mots_precedant:
             #.On change l'ancienne valeur de `nombre_mots_precedant`
             self.nombre_mots_precedant = nombre_mots
             #.On calcule le nombre de mots tapés par minite et on l'affiche 
             #.dans l'interface
-            self.temps_ecoule = self.temps_choisi - self.temps_restant
             self.mots_min = nombre_mots / (self.temps_ecoule / 60.0)
             self.LabelMotsMinV.setText(unicode(str(round(self.mots_min, 1))))
 
@@ -506,8 +527,9 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.Méthode permettant de compter et d'afficher le nombre de caractères 
     #.tapés à la minute (`car_min`)
     def compterCar(self):
-        #.A faire
-
+        #.On calcule le nombre de caractères tapés depuis la valeur `texte_d`
+        nombre_car = len(self.texte_d)
+        self.car_min = nombre_car / (self.temps_ecoule / 60.0)
         #.On affiche le nombre de caractères tapés par minute, arrondi à 
         #.l'entier le plus proche
         self.LabelCarMinV.setText(unicode(str(int(round(self.car_min, 0)))))
@@ -534,10 +556,43 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.Méthode permettant de calculer le score selon la nouvelle formule  
     #.*À détailler*
     def compterScore(self):
-        #.A faire
+        if self.dernier_juste:
+            temps_score = time()
+            temps_ecoule_l = temps_score - self.temps_score_precedant
+            inv_temps_pour_car = 1 / (temps_ecoule_l)
+            self.temps_score_precedant = temps_score
+            nombre_erreur_pour_car = self.car_faux - self.car_faux_precedant
+            self.car_faux_precedant = self.car_faux
+            inv_de_err_plus_un = 1 / (nombre_erreur_pour_car + 1)
+            #.On recherche le type de caractères
+            if self.der_car_T == " ":
+                coeff = 0.4
+            elif re.match(r"[a-z]", self.der_car_T):
+                coeff = 0.5
+            elif re.match(r"[A-Z]", self.der_car_T):
+                coeff = 0.8
+            elif re.match(r"[²&é\"'(-è_çà)=,;:!<]", self.der_car_T):
+                coeff = 1
+            elif re.match(r"[0-9°+?./§>]", self.der_car_T):
+                coeff = 1.2
+            else:
+                coeff = 1.6
+            ln_tps_plus_C_div_tps = (log(self.temps_choisi) + self.C_TEMPS) / \
+                self.temps_choisi
+            score_car = inv_temps_pour_car * inv_de_err_plus_un * \
+                ln_tps_plus_C_div_tps * coeff * self.C_SCORE
+            self.score += score_car
+            # Format : (temps_mis_pour_car_juste, car à taper, car tapé,
+            # points_récoltés, erreurs faîtes avant (-1 si erreur))
+            self.historique_tape.append((round(temps_ecoule_l, 2),
+                                         self.car_attendu_precedant
+                                         .encode("utf8"),
+                                         str(self.der_car_T.toUtf8()),
+                                         round(score_car, 2),
+                                         nombre_erreur_pour_car))
 
-        #.On affiche le score arrondi à l'entier le plus proche dans le GUI
-        self.LabelScoreV.setText(unicode(str(int(round(self.score, 0)))))
+            #.On affiche le score arrondi à l'entier le plus proche dans le GUI
+            self.LabelScoreV.setText(unicode(str(int(round(self.score, 0)))))
 
 #.#Programme principal
 
@@ -554,6 +609,14 @@ def main():
     #.programmme
     myapp.show()
     app.exec_()
+
+    #.*Il faudra fusionner les fautes sur la même lettre*  
+    #.*Pour l'instant, ça ne marche pas*
+    plus_fautes = sorted(myapp.historique_tape, key=lambda data: data[4])
+    print("Les lettres avec le plus de fautes :")
+    for i in range(5):
+        print((plus_fautes[i])[1].upper())
+
     #.Si l'utilisateur veut recommencer, on réappelle la fonction `main`
     if myapp.recommencerV:
         main()
