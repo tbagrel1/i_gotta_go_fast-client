@@ -3,7 +3,6 @@
 #ref_to_md
 
 #.#À faire :
-#.- Commenter le code
 #.- Remettre au clair certaines parties du code
 #.- Faire notre menu, remodifier le GUI, le programmer, le binder
 #.- Changer s/mots en mots/min (revoir le système de stats)
@@ -23,6 +22,8 @@ from ui_module import Ui_Module
 from time import time, sleep
 from math import log
 import sys
+#.Import de la biblothèque `re` pour l'utilisation d'expressions régulières
+import re
 #.Import de la bibliothèque `atexit` nécessaire pour la création du `.exe`
 import atexit
 
@@ -33,19 +34,18 @@ import atexit
 #.thread d'arrière plan, qui fonctionne tout seul (standalone)  
 #.On peut intéragir avec le timer grâce aux méthodes `pauseT`, `reprendreT` et
 #.`quitterT`
-
-#.###En-tête de la classe
-#.On créé ici les signaux `pyqtSignal` permettant d'intéragir avec le GUI
-#.Ces signaux seront ensuite connectés au GUI avec la méthode `connect`
 class ThreadTimer(QThread):
+    #.###En-tête de la classe
+    #.On créé ici les signaux `pyqtSignal` permettant d'intéragir avec le GUI
+    #.Ces signaux seront ensuite connectés au GUI avec la méthode `connect`
     temps_fini_signal = pyqtSignal()
     temps_change_signal = pyqtSignal(float)
     finished = pyqtSignal()
 
     #.###Méthode d'initialisation `__init__`  
-    #.Méthode permettant d'initialiser la classe  
-    #.On hérite de la méthode `__init__` de la classe parente (`QThread`)
+    #.Méthode permettant d'initialiser la classe
     def __init__(self, temps_choisi):
+        #.On hérite de la méthode `__init__` de la classe parente (`QThread`)
         QThread.__init__(self)
         #.On créé les attributs de la classe
         self.temps_choisi = temps_choisi
@@ -60,9 +60,9 @@ class ThreadTimer(QThread):
 
     #.###Méthode principale `run`  
     #.Cette méthode correspond au corps du thread, qui est appelée lors du
-    #.`.start()`, et dont la fin correspond à la fin de l'execution du thread  
-    #.On prend le temps lors du lancement et on désactive la pause
+    #.`.start()`, et dont la fin correspond à la fin de l'execution du thread
     def run(self):
+        #.On prend le temps lors du lancement et on désactive la pause
         self.temps_depart = time()
         self.jeton_pause = False
         #.Tant que `jeton_quitter` est `False` (tant que l'on ne veut pas
@@ -86,11 +86,11 @@ class ThreadTimer(QThread):
             else:
                 self.temps_change_signal.emit(self.temps_restant)
                 sleep(0.1)
-            #.Si la pause est activée, on prend le temps de début de pause
+            #.Si la pause est activée, on prend le temps de début de pause  
+            #.Ensuite, tant que la pause est activée et que le timer ne doit 
+            #.pas être quitté, le programme hiberne par pas de `0,1` s
             if self.jeton_pause:
                 self.temps_debut_pause = time()
-                #.Ensuite, tant que la pause est activée et que le timer ne
-                #.doit pas être quitté, le programme hiberne par pas de `0,1` s
                 while self.jeton_pause and not self.jeton_quitter:
                     sleep(0.1)
                 #.Quand on sort de la boucle (pause terminée), on prend le
@@ -129,17 +129,20 @@ class ThreadTimer(QThread):
 #.Cette classe hérite des classes `QMainWindow` et `Ui_Module` et permet la 
 #.création du GUI et toute sa gestion.  
 #.Cette classe contient la majeure partie du programme du module  
-#.Elle est directement issue de *Qt* (et donc `PyQt`)  
+#.Elle est directement issue de *Qt* (et donc `PyQt`)
+class ModuleApplication(QMainWindow, Ui_Module):
     #.###Méthode d'initialisation `__init__`  
     #.Méthode permettant d'initialiser la classe
-class ModuleApplication(QMainWindow, Ui_Module):
     def __init__(self, parent=None):
         #.On hérite de la méthode `__init__` des classes parentes
         super(ModuleApplication, self).__init__(parent)
         #.On initialise les widgets décris dans le fichier auxiliaire 
         #.`ui_module.py` créé avec *Qt Creator* et `PyQt`
         self.setupUi(self)
-        #.*Ceci sera ensuite remplacé par le menu !*
+
+        #.---------------------------------------------------------------------
+        #.*A remplacer* !!  
+        #.*Ceci sera ensuite remplacé par le menu !*  
         #.On ouvre le fichier de configuration `module.conf`
         fichier_conf_brut = open("module.conf", "r")
         #.On lit le fichier et on récupère les paramètres suivants :
@@ -151,13 +154,13 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.On ouvre ensuite le fichier qui contient le texte à taper
         fichier_texte_brut = open(nom_fichier_texte, "r")
         self.texte = fichier_texte_brut.read().decode("utf-8")
+        #.---------------------------------------------------------------------
 
         #.On enlève les retours à la ligne (remplacés par des espaces) et les 
         #.doubles espaces de ce texte, impossible ou problématiques à taper 
-        #.pour l'utilisateur  
-        #.*A corriger avec des regex*
-        self.texte = (self.texte.replace("\n", " ")).strip()
-        self.texte = self.texte.replace("  ", " ")
+        #.pour l'utilisateur
+        self.texte = (re.sub(r"\n", r" ", self.texte)).strip()
+        self.texte = re.sub(r" {2,}", r" ", self.texte)
 
         #.On définit les attributs
         self.recommencerV = False
@@ -249,10 +252,10 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.###Méthode `interpreterDerCar`
     #.Méthode permettant d'interpréter le caractère tapé à la suite de la 
     #.méthode `getDerCar`  
+    def interpreterDerCar(self, der_car_T):
         #.On vérifie que le texte tapé n'est pas nul (car les méthodes 
         #.`getDerCar` et `interpreterDerCar` se déclenchent après le `clear`
         #. de la boîte)
-    def interpreterDerCar(self, der_car_T):
         if der_car_T != "":
             #.Si le caractère tapé est bien le caractère attendu :  
             #.On appelle la méthode `decalerTexte`, on ajoute 1 aux caractères 
@@ -269,23 +272,23 @@ class ModuleApplication(QMainWindow, Ui_Module):
                 self.rouge()
 
     #.###Méthode `vert`
-    #.Méthode permettant de mettre en vert les flèches (`LabelTapeFleche`)  
-        #.On définit la couleur de police à `green`
+    #.Méthode permettant de mettre en vert les flèches (`LabelTapeFleche`)
     def vert(self):
+        #.On définit la couleur de police à `green`
         self.LabelTapeFleche.setStyleSheet("color: green")
 
     #.###Méthode `rouge`
-    #.Méthode permettant de mettre en rouge les flèches (`LabelTapeFleche`)  
-        #.On définit la couleur de police à `red`
+    #.Méthode permettant de mettre en rouge les flèches (`LabelTapeFleche`)
     def rouge(self):
+        #.On définit la couleur de police à `red`
         self.LabelTapeFleche.setStyleSheet("color: red")
 
     #.###Méthode `decalerTexte`
-    #.Méthode permettant de décaler le texte (au niveau des variables)  
+    #.Méthode permettant de décaler le texte (au niveau des variables)
+    def decalerTexte(self):
         #.On avance de 1 la variable `pos_texte` ;  
         #.On actualise les variables `texte_d`, `texte_g` et `car_attendu`
-        #.en fonction de la nouvelle valeur de `pos_texte`  
-    def decalerTexte(self):
+        #.en fonction de la nouvelle valeur de `pos_texte`
         self.pos_texte += 1
         self.texte_d = self.texte[:self.pos_texte]
         self.car_attendu = self.texte[self.pos_texte]
@@ -299,10 +302,10 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
     #.###Méthode `updateTexteLabel`
     #.Méthode permettant de mettre à jour le texte des labels du GUI (et donc 
-    #.décaler le texte au niveau du GUI)  
+    #.décaler le texte au niveau du GUI)
+    def updateTexteLabel(self):
         #.La variable `texte_aff_droite` correspond à `texte_d` recoupé si 
         #.besoin à la longueur maximum du label (22 caractères)
-    def updateTexteLabel(self):
         texte_aff_droite = self.texte_d
         if len(texte_aff_droite) > 22:
             texte_aff_droite = texte_aff_droite[-22:]
@@ -326,17 +329,17 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.LabelTapeDroit.setText(texte_aff_basdroite)
 
     #.###Méthode (slot) `togglePauseM`
-    #.Méthode permettant d'activer/désactiver la pause  
-        #.Si le temps est fini, le bouton start/pause permet recommencer 
-        #.(méthode `recommencer`)
+    #.Méthode permettant d'activer/désactiver la pause
     @pyqtSlot()
     def togglePauseM(self):
+        #.Si le temps est fini, le bouton start/pause permet recommencer 
+        #.(méthode `recommencer`)
         if self.jeton_temps_finiM:
             self.recommencer()
         #.Si le temps n'est pas fini, et que c'est le premier lancement :  
+        elif self.premier_lancement_timer:
             #.On désactive la pause (`jeton_pauseM`) et le drapeau de premier 
             #.lancement (`premier_lancement_timer`)  
-        elif self.premier_lancement_timer:
             self.premier_lancement_timer = False
             self.jeton_pauseM = False
             #.On lance ensuite le timer pour la première fois ;  
@@ -352,10 +355,10 @@ class ModuleApplication(QMainWindow, Ui_Module):
             self.EntryTapeCentre.setFocus()
             self.LabelTapeFleche.setEnabled(True)
         #.Si le temps n'est pas fini et que ce n'est pas le premier 
-        #.lancement :  
+        #.lancement :
+        else:
             #.Si `jeton_pause_M` vaut `False` (pas de pause), on lance la 
             #.pause (méthode `pauseM`)
-        else:
             if not self.jeton_pauseM:
                 self.pauseM()
             #.Sinon (pause active), on désactive la pause (méthode 
@@ -364,9 +367,9 @@ class ModuleApplication(QMainWindow, Ui_Module):
                 self.reprendreM()
 
     #.Méthode `pauseM`
-    #.Méthode permettant de mettre en pause le GUI  
-        #.On appelle la méthode `pauseT` du timer pour le mettre en pause
+    #.Méthode permettant de mettre en pause le GUI
     def pauseM(self):
+        #.On appelle la méthode `pauseT` du timer pour le mettre en pause
         self.Timer.pauseT()
         #.On change le texte du bouton start/pause et on active la pause en 
         #.passant `jeton_pauseM` à `True`
@@ -386,10 +389,10 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.LabelTapeFleche.setStyleSheet("")
 
     #.###Méthode `reprendreM`
-    #.Méthode permettant de reprendre après une pause du GUI  
+    #.Méthode permettant de reprendre après une pause du GUI
+    def reprendreM(self):
         #.On appelle la méthode `reprendreT` du timer pour enlever la pause 
         #.du timer
-    def reprendreM(self):
         self.Timer.reprendreT()
         #.On change le texte du bouton start/pause et on désactive la pause en 
         #.passant `jeton_pauseM` à `False`
@@ -409,11 +412,11 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
     #.###Méthode (slot) `quitterM`
     #.Méthode permettant de quitter proprement le programme en fermant d'abord 
-    #.le timer  
-        #.On appelle la méthode `quitterT` du timer pour le fermer, et on 
-        #.attend qu'il se ferme
+    #.le timer
     @pyqtSlot()
     def quitterM(self):
+        #.On appelle la méthode `quitterT` du timer pour le fermer, et on 
+        #.attend qu'il se ferme
         self.Timer.quitterT()
         self.Timer.wait()
         #.Enfin, on ferme le programme
@@ -421,11 +424,11 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
     #.###Méthode (slot) `temps_change`
     #.Méthode permettant de mettre à jour le temps affiché lors de l'émission 
-    #.du signal `temps_change_signal`  
-        #.On récupère la valeur de `temps_restant` portée par le signal qui 
-        #.appel ce slot (cette méthode)
+    #.du signal `temps_change_signal`
     @pyqtSlot(float)
     def temps_change(self, temps_restant):
+        #.On récupère la valeur de `temps_restant` portée par le signal qui 
+        #.appel ce slot (cette méthode)
         self.temps_restant = temps_restant
         #.On met alors à jour l'affichage du temps restant et la barre 
         #.d'avancement
@@ -441,11 +444,11 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
     #.###Méthode (slot) `temps_fini`
     #.Méthode appelée lorsque le temps est fini et permettant de paramètrer le 
-    #.GUI pour un enventuel nouveau lancement (si l'utilisateur recommence)  
-        #.On désactive tous les labels et on remet la couleur des flèches par 
-        #.défaut (noir)
+    #.GUI pour un enventuel nouveau lancement (si l'utilisateur recommence)
     @pyqtSlot()
     def temps_fini(self):
+        #.On désactive tous les labels et on remet la couleur des flèches par 
+        #.défaut (noir)
         self.LabelTexteDroite.setEnabled(False)
         self.LabelTexteCentre.setEnabled(False)
         self.LabelTexteGauche.setEnabled(False)
@@ -460,32 +463,33 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.setUpRecommencer()
 
     #.###Méthode `setUpRecommencer`
-    #.Méthode permettant de reparamétrer le GUI pour un nouveau lancement  
-        #.On change le texte du bouton start/pause
+    #.Méthode permettant de reparamétrer le GUI pour un nouveau lancement
     def setUpRecommencer(self):
+        #.On change le texte du bouton start/pause
         self.BoutonStartPause.setText("Recommencer")
 
     #.###Méthode `recommencer`
-    #.Méthode permettant de recommencer  
-        #.À faire
+    #.Méthode permettant de recommencer
     def recommencer(self):
+        #.On passe la valeur de `recommencerV` à `True`  
+        #.On appelle ensuite la méthode `quitterM` permettant de quitter
         self.recommencerV = True
         self.quitterM()
 
     #.###Méthode `genererStats`
-    #.Méthode permettant de générer les statistiques  
+    #.Méthode permettant de générer les statistiques
+    def genererStats(self):
         #.On appelle les méthodes `compterMots`, `compterJusteErreur` et 
         #.`compterScore` en charge des calculs des statistiques
-    def genererStats(self):
         self.compterMots()
         self.compterJusteErreur()
         self.compterScore()
 
     #.###Méthode `compterMots`
     #.Méthode permettant de compter le nombre de mots tapés et de calculer 
-    #.ensuite le temps moyen mis pour taper un mot (`s_mots`)  
-        #.On calcule le nombre de mots tapés à partir de la valeur de `texte_d`
+    #.ensuite le temps moyen mis pour taper un mot (`s_mots`)
     def compterMots(self):
+        #.On calcule le nombre de mots tapés à partir de la valeur de `texte_d`
         nombre_mots = len((self.texte_d).split(" ")) - 1
         self.LabelScoreV.setText(unicode(str(nombre_mots)))
         #.On définit le nombre de mots tapés comme étant supérieur à 1
@@ -500,9 +504,9 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.###Méthode `compterJusteErreur`
     #.Méthode permettant de calculer et d'afficher dans les barres 
     #.horizontales le pourcentage de caractères justes et faux (réussite et 
-    #.erreurs)  
-        #.On définit la somme, supérieure à 1, des caractères justes et faux
+    #.erreurs)
     def compterJusteErreur(self):
+        #.On définit la somme, supérieure à 1, des caractères justes et faux
         somme = self.car_justes + self.car_faux
         if somme == 0:
             somme = 1
@@ -515,12 +519,13 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.BarreReussite.setValue(round(self.reussite * 100, 0))
         self.BarreErreurs.setValue(round(self.erreurs * 100, 0))
 
+    #.###A refaire complétement !!!
     #.###Méthode `compterScore`
     #.Méthode permettant de calculer le score selon la formule impliquant la 
-    #.vitesse, la précision, l'endurance, le temps choisi et l'avancement  
+    #.vitesse, la précision, l'endurance, le temps choisi et l'avancement
+    def compterScore(self):
         #.On calcule l'avancement comme étant le rapport du temps écoulé sur 
         #.le temps total
-    def compterScore(self):
         avancement = self.temps_ecoule / self.temps_choisi
         s_mots_mod = self.s_mots
 
@@ -530,11 +535,6 @@ class ModuleApplication(QMainWindow, Ui_Module):
             s_mots_mod = 1
         inv_vitesse = 1 / s_mots_mod
 
-        #.On calcule également le nombre de mots par minute  
-        #.On l'affiche à la place de l'ancien label "Meilleurs scores"
-        mots_m = (1 / s_mots_mod) * 60
-        self.LabelBestT.setText(unicode(str(round(mots_m, 1))))
-
         #.On calcule le logarithme népérien de l'inverse du ratio d'erreurs 
         #.supérieur à 0.001
         erreurs_mod = self.erreurs
@@ -543,8 +543,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
         ln_inv_erreurs = log(1 / erreurs_mod)
 
         #.On calcule la somme du logarithme népérien du temps choisi et d'une 
-        #.constante qui vaut ici 5.5 (à éventuellement modifier)
-        ln_temps_plusC = log(self.temps_choisi / 60) + 5.5
+        #.constante qui vaut ici 5 (à éventuellement modifier)
+        ln_temps_plusC = log(self.temps_choisi / 60) + 5
 
         #.Enfin, on calcule le produit de tous ces facteurs, on multiplie le 
         #.résultat par 100 et on affiche la valeur arrondie à l'entier le plus 
@@ -557,9 +557,9 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
 #.##Fonction `main`
 #.Fonction prenant en argument (futur) les valeurs choisies dans le menu, et 
-#.permettant de créér l'interface et de la lancer  
-    #.On créé une application *Qt* `Qapplication`, pour porter notre GUI
+#.permettant de créér l'interface et de la lancer
 def main():
+    #.On créé une application *Qt* `Qapplication`, pour porter notre GUI
     app = QApplication(sys.argv)
     #.On créé notre GUI comme étant une instance de la classe 
     #.`ModuleApplication` décrite plus haut
@@ -574,8 +574,8 @@ def main():
 
 #.##Test de lancement standalone
 #.Test permettant de lancer le programme si il est exécuté directement tout 
-#.seul, sans import  
+#.seul, sans import
+if __name__ == "__main__":
     #.On appelle la fonction `main` définit plus haut avec des paramètres 
     #.(futurs) par défaut
-if __name__ == "__main__":
     main()
