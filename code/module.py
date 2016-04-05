@@ -282,8 +282,6 @@ class ModuleApplication(QMainWindow, Ui_Module):
                 self.dernier_juste = False
                 self.car_faux += 1
                 self.rouge()
-                # Format : (temps_mis_pour_car_juste, car à taper, car tapé,
-                # points_récoltés, erreurs faîtes avant (-1 si erreur))
                 self.historique_tape.append((0.0,
                                              self.car_attendu.encode("utf8"),
                                              str(self.der_car_T.toUtf8()),
@@ -582,8 +580,6 @@ class ModuleApplication(QMainWindow, Ui_Module):
             score_car = inv_temps_pour_car * inv_de_err_plus_un * \
                 ln_tps_plus_C_div_tps * coeff * self.C_SCORE
             self.score += score_car
-            # Format : (temps_mis_pour_car_juste, car à taper, car tapé,
-            # points_récoltés, erreurs faîtes avant (-1 si erreur))
             self.historique_tape.append((round(temps_ecoule_l, 2),
                                          self.car_attendu_precedant
                                          .encode("utf8"),
@@ -609,14 +605,6 @@ def main():
     #.programmme
     myapp.show()
     app.exec_()
-
-    #.*Il faudra fusionner les fautes sur la même lettre*  
-    #.*Pour l'instant, ça ne marche pas*
-    plus_fautes = sorted(myapp.historique_tape, key=lambda data: data[4])
-    print("Les lettres avec le plus de fautes :")
-    for i in range(5):
-        print((plus_fautes[i])[1].upper())
-
     #.Si l'utilisateur veut recommencer, on réappelle la fonction `main`
     if myapp.recommencerV:
         main()
