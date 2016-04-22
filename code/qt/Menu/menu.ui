@@ -63,7 +63,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QFrame" name="FrameModeJeu">
+   <widget class="QFrame" name="FrameTempsJeu">
     <property name="geometry">
      <rect>
       <x>510</x>
@@ -78,7 +78,7 @@
     <property name="frameShadow">
      <enum>QFrame::Plain</enum>
     </property>
-    <widget class="QLabel" name="LabelMode">
+    <widget class="QLabel" name="LabelTempsJeuT">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -98,7 +98,7 @@
       <string>2. Choisissez votre temps de jeu</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="LabelTempsJeu">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -116,7 +116,7 @@
       <string>Temps de jeu :</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_8">
+    <widget class="QLabel" name="LabelTempsJeuMinutes">
      <property name="geometry">
       <rect>
        <x>120</x>
@@ -134,7 +134,7 @@
       <string>Minutes</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_9">
+    <widget class="QLabel" name="LabelTempsJeuSecondes">
      <property name="geometry">
       <rect>
        <x>330</x>
@@ -152,7 +152,7 @@
       <string>Secondes</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_10">
+    <widget class="QLabel" name="LabelTempsColon">
      <property name="geometry">
       <rect>
        <x>190</x>
@@ -175,7 +175,7 @@
       <set>Qt::AlignCenter</set>
      </property>
     </widget>
-    <widget class="QSpinBox" name="spinBox">
+    <widget class="QSpinBox" name="SBoxMinutes">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -202,7 +202,7 @@
       <number>1</number>
      </property>
     </widget>
-    <widget class="QSpinBox" name="spinBox_2">
+    <widget class="QSpinBox" name="SBoxSecondes">
      <property name="geometry">
       <rect>
        <x>230</x>
@@ -262,7 +262,7 @@
       <string>1. Choisissez votre source de texte</string>
      </property>
     </widget>
-    <widget class="QTabWidget" name="TabSource">
+    <widget class="QTabWidget" name="TabSourceTexte">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -279,7 +279,7 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="TabMotsFR">
+     <widget class="QWidget" name="TabSpeciaux">
       <attribute name="title">
        <string>Mots spéciaux</string>
       </attribute>
@@ -287,7 +287,7 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>79</y>
+         <y>100</y>
          <width>371</width>
          <height>21</height>
         </rect>
@@ -296,11 +296,11 @@
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="LabelSyll">
        <property name="geometry">
         <rect>
          <x>50</x>
-         <y>130</y>
+         <y>170</y>
          <width>211</width>
          <height>31</height>
         </rect>
@@ -314,11 +314,11 @@
         <string>possédant la syllabe</string>
        </property>
       </widget>
-      <widget class="QRadioButton" name="radioButton">
+      <widget class="QRadioButton" name="RadioMotsFR">
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>10</y>
+         <y>20</y>
          <width>131</width>
          <height>31</height>
         </rect>
@@ -335,11 +335,11 @@
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QSpinBox" name="spinBox_3">
+      <widget class="QSpinBox" name="SBoxMotsFR">
        <property name="geometry">
         <rect>
          <x>160</x>
-         <y>10</y>
+         <y>20</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -365,11 +365,11 @@
         <number>100</number>
        </property>
       </widget>
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="LabelMotsFR1">
        <property name="geometry">
         <rect>
          <x>260</x>
-         <y>10</y>
+         <y>20</y>
          <width>131</width>
          <height>31</height>
         </rect>
@@ -383,11 +383,11 @@
         <string>mots les plus</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_5">
+      <widget class="QLabel" name="LabelMotsFR2">
        <property name="geometry">
         <rect>
          <x>50</x>
-         <y>45</y>
+         <y>60</y>
          <width>331</width>
          <height>31</height>
         </rect>
@@ -404,11 +404,11 @@
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QRadioButton" name="radioButton_2">
+      <widget class="QRadioButton" name="RadioSyll">
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>100</y>
+         <y>130</y>
          <width>371</width>
          <height>31</height>
         </rect>
@@ -422,11 +422,11 @@
         <string> Afficher uni&amp;quement des mots</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit">
+      <widget class="QLineEdit" name="EntrySyll">
        <property name="geometry">
         <rect>
          <x>240</x>
-         <y>130</y>
+         <y>170</y>
          <width>81</width>
          <height>31</height>
         </rect>
@@ -441,11 +441,11 @@
        </property>
       </widget>
      </widget>
-     <widget class="QWidget" name="TabActu">
+     <widget class="QWidget" name="TabExemple">
       <attribute name="title">
        <string>Exemple de texte</string>
       </attribute>
-      <widget class="QRadioButton" name="TexteEx1R">
+      <widget class="QRadioButton" name="LabelTexteEx1R">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -461,7 +461,7 @@
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QRadioButton" name="TexteEx2R">
+      <widget class="QRadioButton" name="LabelTexteEx2R">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -474,7 +474,7 @@
         <string>Tchoupi &amp;va à la boulangerie</string>
        </property>
       </widget>
-      <widget class="QRadioButton" name="TexteEx3R">
+      <widget class="QRadioButton" name="LabelTexteEx3R">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -487,7 +487,7 @@
         <string>Tchoupi va au &amp;bordel</string>
        </property>
       </widget>
-      <widget class="QLabel" name="TexteEx1">
+      <widget class="QLabel" name="LabelTexteEx1">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -500,7 +500,7 @@
         <string>Difficulté *</string>
        </property>
       </widget>
-      <widget class="QLabel" name="TexteEx2">
+      <widget class="QLabel" name="LabelTexteEx2">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -513,7 +513,7 @@
         <string>Difficulté **</string>
        </property>
       </widget>
-      <widget class="QLabel" name="TexteEx3">
+      <widget class="QLabel" name="LabelTexteEx3">
        <property name="geometry">
         <rect>
          <x>20</x>
