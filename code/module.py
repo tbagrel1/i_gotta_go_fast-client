@@ -2,13 +2,6 @@
 # -*- coding: utf-8 -*-
 #ref_to_md
 
-#.#À faire :
-#.- Remettre au clair certaines parties du code
-#.- Faire notre menu, remodifier le GUI, le programmer, le binder
-#.- Changer s/mots en mots/min (revoir le système de stats)
-#.- Proposer un échantillon de textes plus étendu
-#.- Certaines parties du code à refaire / reprécises (ex : doubles espaces)
-
 #.#Import des modules
 
 #.Import de `__future__.division` pour la division décimale même sur les `int`
@@ -125,7 +118,7 @@ class ThreadTimer(QThread):
     def quitterT(self):
         self.jeton_quitter = True
 
-#.##Classe ModuleApplication
+#.##Classe `ModuleApplication`
 #.Cette classe hérite des classes `QMainWindow` et `Ui_Module` et permet la 
 #.création du GUI et toute sa gestion.  
 #.Cette classe contient la majeure partie du programme du module  
