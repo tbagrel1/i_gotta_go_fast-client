@@ -126,7 +126,7 @@ class ThreadTimer(QThread):
 class ModuleApplication(QMainWindow, Ui_Module):
     #.###Méthode d'initialisation `__init__`  
     #.Méthode permettant d'initialiser la classe
-    def __init__(self, parent=None):
+    def __init__(self, param, parent=None):
         #.On hérite de la méthode `__init__` des classes parentes
         super(ModuleApplication, self).__init__(parent)
         #.On initialise les widgets décris dans le fichier auxiliaire 
@@ -588,19 +588,21 @@ class ModuleApplication(QMainWindow, Ui_Module):
 #.##Fonction `main`
 #.Fonction prenant en argument (futur) les valeurs choisies dans le menu, et 
 #.permettant de créér l'interface et de la lancer
-def main():
+def main(param):
     #.On créé une application *Qt* `Qapplication`, pour porter notre GUI
     app = QApplication(sys.argv)
     #.On créé notre GUI comme étant une instance de la classe 
     #.`ModuleApplication` décrite plus haut
-    myapp = ModuleApplication()
+    myapp = ModuleApplication(param)
     #.On affiche notre GUI et on connecte sa fermeture à la fermeture du 
     #.programmme
     myapp.show()
     app.exec_()
+    recommencerV = myapp.recommencerV
+
     #.Si l'utilisateur veut recommencer, on réappelle la fonction `main`
-    if myapp.recommencerV:
-        main()
+    if recommencerV:
+        main(param)
 
 #.##Test de lancement standalone
 #.Test permettant de lancer le programme si il est exécuté directement tout 
@@ -608,4 +610,4 @@ def main():
 if __name__ == "__main__":
     #.On appelle la fonction `main` définit plus haut avec des paramètres 
     #.(futurs) par défaut
-    main()
+    main([])

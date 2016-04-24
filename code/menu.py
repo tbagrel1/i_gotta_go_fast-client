@@ -36,6 +36,29 @@ class MenuApplication(QMainWindow, Ui_Menu):
         #.`ui_menu.py` créé avec *Qt Creator* et `PyQt`
         self.setupUi(self)
 
+        self.param = []
+
+        self.BoutonCommencer.clicked.connect(self.commencer)
+        self.BoutonQuitter.clicked.connect(self.quitter)
+
+    def getParam(self):
+        #.On récupère les paramètres :
+        #.self.param[0] = self.getTexteMode()
+        #.self.param[1] = self.getTemps()
+        #....
+        #.En attendant :
+        self.param = ["test"]
+
+    @pyqtSlot()
+    def commencer(self):
+        self.getParam()
+        self.close()
+
+    @pyqtSlot()
+    def quitter(self):
+        self.param = []
+        self.close()
+
 #.#Programme principal
 
 #.##Fonction `main`
@@ -47,10 +70,13 @@ def main():
     #.On créé notre GUI comme étant une instance de la classe 
     #.`MenuApplication` décrite plus haut
     myapp = MenuApplication()
-    #.On affiche notre GUI et on connecte sa fermeture à la fermeture du 
-    #.programmme
+    # #.On affiche notre GUI et on connecte sa fermeture à la fermeture du 
+    # #.programmme
     myapp.show()
     app.exec_()
+    param = myapp.param
+
+    return param
 
 #.##Test de lancement standalone
 #.Test permettant de lancer le programme si il est exécuté directement tout 
