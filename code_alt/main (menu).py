@@ -18,6 +18,9 @@ import sys
 import re
 #.Import de la bibliothèque `atexit` nécessaire pour la création du `.exe`
 import atexit
+#.#Import des 3 modules pythons : `FenetreBVN`, `Menu` et `Module`
+import fenetrebvn
+import module
 
 #.#Déclaration des classes
 
@@ -41,6 +44,13 @@ class MenuApplication(QMainWindow, Ui_Menu):
         self.BoutonCommencer.clicked.connect(self.commencer)
         self.BoutonQuitter.clicked.connect(self.quitter)
 
+    def affFenetreBVN(self):
+        self.FenetreBVN = fenetrebvn.FenetreBVNApplication()
+        self.FenetreBVN.valeur_quitter.connect(self.handleQuitterBVN)
+        self.FenetreBVN.termine.connect(self.termineBVN)
+        self.FenetreBVN.setWindowModality(Qt.ApplicationModal)
+        self.FenetreBVN.show()
+
     def getParam(self):
         #.On récupère les paramètres :
         #.self.param[0] = self.getTexteMode()
@@ -52,12 +62,33 @@ class MenuApplication(QMainWindow, Ui_Menu):
     @pyqtSlot()
     def commencer(self):
         self.getParam()
-        self.close()
+        self.Module = module.ModuleApplication(self.param)
+        self.Module.termine.connect(self.termineModule)
+        self.Module.setWindowModality(Qt.ApplicationModal)
+        self.hide()
+        self.Module.show()
 
     @pyqtSlot()
     def quitter(self):
-        self.param = []
         self.close()
+
+    @pyqtSlot(bool)
+    def handleQuitterBVN(self, valeur_quitter):
+        if valeur_quitter:
+            self.quitter()
+
+    @pyqtSlot()
+    def termineBVN(self):
+        del self.FenetreBVN
+        self.show()
+
+    @pyqtSlot(bool)
+    def termineModule(self, recommencerModule):
+        del self.Module
+        if recommencerModule:
+            self.commencer()
+        else:
+            self.show()
 
 #.#Programme principal
 
@@ -72,14 +103,11 @@ def main():
     myapp = MenuApplication()
     # #.On affiche notre GUI et on connecte sa fermeture à la fermeture du 
     # #.programmme
-    myapp.show()
+    myapp.affFenetreBVN()
     app.exec_()
-    param = myapp.param
 
     del myapp
     del app
-
-    return param
 
 #.##Test de lancement standalone
 #.Test permettant de lancer le programme si il est exécuté directement tout 

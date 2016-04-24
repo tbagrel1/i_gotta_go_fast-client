@@ -1,0 +1,10 @@
+Modes de jeu :
+
+mots_fr::<nombre>                   Ex : mots_fr::1000
+syll::<syll>                        Ex : syll::tion
+expl::<numéro>                      Ex : expl::2
+perso:: (2 possibilités) :
+    - perso::entier::{{{<texte}}}
+    Ex : perso::entier::{{{Léo le cerf court dans la forêt.}}}
+    - perso::nom::<nom_fichier>
+    Ex : perso::nom::{{{mon_texte.txt}}}

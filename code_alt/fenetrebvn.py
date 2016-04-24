@@ -28,8 +28,11 @@ import atexit
 #.bienvenue  
 #.Elle est directement issue de *Qt* (et donc `PyQt`)
 class FenetreBVNApplication(QMainWindow, Ui_FenetreBVN):
+    valeur_quitter = pyqtSignal(bool)
+    termine = pyqtSignal()
     #.###Méthode d'initialisation `__init__`
     #.Méthode permettant d'initialiser la classe
+
     def __init__(self, parent=None):
         #.On hérite de la méthode `__init__` des classes parentes
         super(FenetreBVNApplication, self).__init__(parent)
@@ -37,45 +40,17 @@ class FenetreBVNApplication(QMainWindow, Ui_FenetreBVN):
         #.`ui_fenetrebvn.py` créé avec *Qt Creator* et `PyQt`
         self.setupUi(self)
 
-        self.quitterV = False
-
         self.BoutonContinuer.clicked.connect(self.continuer)
         self.BoutonQuitter.clicked.connect(self.quitter)
 
     @pyqtSlot()
     def quitter(self):
-        self.quitterV = True
+        self.termine.emit()
+        self.valeur_quitter.emit(True)
         self.close()
 
     @pyqtSlot()
     def continuer(self):
+        self.termine.emit()
+        self.valeur_quitter.emit(False)
         self.close()
-
-#.#Programme principal
-
-#.##Fonction `main`
-#.Fonction ne prenant pas d'arguments et permettant de créer l'interface et de 
-#.la lancer
-def main():
-    #.On créé une application *Qt* `Qapplication`, pour porter notre GUI
-    app = QApplication(sys.argv)
-    #.On créé notre GUI comme étant une instance de la classe 
-    #.`FenetreBVNApplication` décrite plus haut
-    myapp = FenetreBVNApplication()
-    #.On affiche notre GUI et on connecte sa fermeture à la fermeture du 
-    #.programmme
-    myapp.show()
-    app.exec_()
-    quitterV = myapp.quitterV
-
-    del myapp
-    del app
-
-    return quitterV
-
-#.##Test de lancement standalone
-#.Test permettant de lancer le programme si il est exécuté directement tout 
-#.seul, sans import
-if __name__ == "__main__":
-    #.On appelle la fonction `main` définit plus haut
-    main()

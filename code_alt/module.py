@@ -124,6 +124,7 @@ class ThreadTimer(QThread):
 #.Cette classe contient la majeure partie du programme du module  
 #.Elle est directement issue de *Qt* (et donc `PyQt`)
 class ModuleApplication(QMainWindow, Ui_Module):
+    termine = pyqtSignal(bool)
     #.###Méthode d'initialisation `__init__`  
     #.Méthode permettant d'initialiser la classe
     def __init__(self, param, parent=None):
@@ -433,6 +434,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.attend qu'il se ferme
         self.Timer.quitterT()
         self.Timer.wait()
+        self.termine.emit(self.recommencerV)
         #.Enfin, on ferme le programme
         self.close()
 
@@ -582,35 +584,3 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
             #.On affiche le score arrondi à l'entier le plus proche dans le GUI
             self.LabelScoreV.setText(unicode(str(int(round(self.score, 0)))))
-
-#.#Programme principal
-
-#.##Fonction `main`
-#.Fonction prenant en argument (futur) les valeurs choisies dans le menu, et 
-#.permettant de créér l'interface et de la lancer
-def main(param):
-    #.On créé une application *Qt* `Qapplication`, pour porter notre GUI
-    app = QApplication(sys.argv)
-    #.On créé notre GUI comme étant une instance de la classe 
-    #.`ModuleApplication` décrite plus haut
-    myapp = ModuleApplication(param)
-    #.On affiche notre GUI et on connecte sa fermeture à la fermeture du 
-    #.programmme
-    myapp.show()
-    app.exec_()
-    recommencerV = myapp.recommencerV
-
-    del myapp
-    del app
-
-    #.Si l'utilisateur veut recommencer, on réappelle la fonction `main`
-    if recommencerV:
-        main(param)
-
-#.##Test de lancement standalone
-#.Test permettant de lancer le programme si il est exécuté directement tout 
-#.seul, sans import
-if __name__ == "__main__":
-    #.On appelle la fonction `main` définit plus haut avec des paramètres 
-    #.(futurs) par défaut
-    main([])
