@@ -1,5 +1,0 @@
-Dans l'ordre :
-1. Dernier dossier (liste de mots) (path) [.]
-2.  Dernière liste de mots (name) [ListeMotsDefaut.txt]
-3. Dernier nombre d'erreur choisi [3]
-4. Dernier temps choisi [30]
