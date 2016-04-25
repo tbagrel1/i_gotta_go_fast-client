@@ -13,12 +13,15 @@ from PyQt4.QtGui import *
 from ui_module import Ui_Module
 #.Import des bibliothèques standards de `python`
 from time import time, sleep
+from os import system, popen
 from math import log
 import sys
 #.Import de la biblothèque `re` pour l'utilisation d'expressions régulières
 import re
 #.Import de la bibliothèque `atexit` nécessaire pour la création du `.exe`
 import atexit
+
+from random import randint
 
 #.#Déclaration des classes
 
@@ -37,7 +40,7 @@ class ThreadTimer(QThread):
 
     #.###Méthode d'initialisation `__init__`  
     #.Méthode permettant d'initialiser la classe
-    def __init__(self, temps_choisi):
+    def __init__(self, temps_choisi=60):
         #.On hérite de la méthode `__init__` de la classe parente (`QThread`)
         QThread.__init__(self)
         #.On créé les attributs de la classe
@@ -127,33 +130,43 @@ class ModuleApplication(QMainWindow, Ui_Module):
     termine = pyqtSignal(bool)
     #.###Méthode d'initialisation `__init__`  
     #.Méthode permettant d'initialiser la classe
-    def __init__(self, param, parent=None):
+    def __init__(self, param=[60, "expl::1"], pseudo="Anonyme", parent=None):
         #.On hérite de la méthode `__init__` des classes parentes
         super(ModuleApplication, self).__init__(parent)
         #.On initialise les widgets décris dans le fichier auxiliaire 
         #.`ui_module.py` créé avec *Qt Creator* et `PyQt`
         self.setupUi(self)
 
-        #.---------------------------------------------------------------------
-        #.*A remplacer : Ceci sera ensuite remplacé par le menu !*  
-        #.On ouvre le fichier de configuration `module.conf`
-        fichier_conf_brut = open("module.conf", "r")
-        #.On lit le fichier et on récupère les paramètres suivants :
-        #.- Temps choisi
-        #.- Nom (ou chemin) du fichier qui contient le texte à taper
-        fichier_conf = fichier_conf_brut.readlines()
-        self.temps_choisi = float((fichier_conf[1])[:-1])
-        nom_fichier_texte = (fichier_conf[3])[:-1]
-        #.On ouvre ensuite le fichier qui contient le texte à taper
-        fichier_texte_brut = open(nom_fichier_texte, "r")
-        self.texte = fichier_texte_brut.read().decode("utf-8")
-        #.---------------------------------------------------------------------
+        #.On part du principe que les paramètres auront été vérifiés par le
+        #.menu et qu'ils sont donc exempts d'erreurs
 
-        #.On enlève les retours à la ligne (remplacés par des espaces) et les 
-        #.doubles espaces de ce texte, impossible ou problématiques à taper 
-        #.pour l'utilisateur
-        self.texte = (re.sub(r"\n", r" ", self.texte)).strip()
-        self.texte = re.sub(r" {2,}", r" ", self.texte)
+        self.temps_choisi = param[0]
+        self.mode_texte = param[1]
+        self.pseudo = pseudo
+
+        self.texte = ""
+        self.genererTexte()
+
+        ##.--------------------------------------------------------------------
+        # #.*A remplacer : Ceci sera ensuite remplacé par le menu !*  
+        # #.On ouvre le fichier de configuration `module.conf`
+        # fichier_conf_brut = open("module.conf", "r")
+        # #.On lit le fichier et on récupère les paramètres suivants :
+        # #.- Temps choisi
+        # #.- Nom (ou chemin) du fichier qui contient le texte à taper
+        # fichier_conf = fichier_conf_brut.readlines()
+        # self.temps_choisi = float((fichier_conf[1])[:-1])
+        # nom_fichier_texte = (fichier_conf[3])[:-1]
+        # #.On ouvre ensuite le fichier qui contient le texte à taper
+        # fichier_texte_brut = open(nom_fichier_texte, "r")
+        # self.texte = fichier_texte_brut.read().decode("utf-8")
+        ##.--------------------------------------------------------------------
+
+        # #.On enlève les retours à la ligne (remplacés par des espaces) et les 
+        # #.doubles espaces de ce texte, impossible ou problématiques à taper 
+        # #.pour l'utilisateur
+        # self.texte = (re.sub(r"\n", r" ", self.texte)).strip()
+        # self.texte = re.sub(r" {2,}", r" ", self.texte)
 
         #.On définit les attributs
         self.recommencerV = False
@@ -235,6 +248,66 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.pas à cliquer dessus)
         self.EntryTapeCentre.setFocus()
 
+    def genererTexte(self):
+        mtxt_s = self.mode_texte.split("::")
+        if mtxt_s[0] == "mots_fr":
+            self.texte += (self.genererMotsFR(int(mtxt_s[1]))).decode("utf-8")
+        elif mtxt_s[0] == "syll":
+            self.texte += (self.genererSyll(mtxt_s[1])).decode("utf-8")
+        elif mtxt_s[0] == "expl":
+            self.texte += (self.genererExemple(int(mtxt_s[1]))).decode("utf-8")
+        elif mtxt_s[0] == "perso":
+            if mtxt_s[1] == "nom":
+                self.texte += (self.genererNom((mtxt_s[2])[3:-3]))\
+                    .decode("utf-8")
+            elif mtxt_s[1] == "entier":
+                texte_temp = ((mtxt_s[2])[3:-3]).strip()
+                if len(texte_temp) > 4096:
+                    texte_temp = texte_temp[:4096]
+                self.texte += (texte_temp + " ").decode("utf-8")
+
+        assert self.texte
+
+    def genererMotsFR(self, nb):
+        fichier_mots_brut = open("dictionnaire_freq.txt", "r")
+        fichier_mots = fichier_mots_brut.readlines()
+        liste_mots = ([elt[:-1] for elt in fichier_mots if elt and
+                       elt != "\n"])[:nb]
+        chaine = ""
+        for i in range(25):
+            j = randint(0, nb - 1)
+            chaine += (liste_mots[j] + " ")
+        return chaine
+
+    def genererSyll(self, syll):
+        fichier_mots_brut = open("dictionnaire_syll.txt", "r")
+        fichier_mots = fichier_mots_brut.readlines()
+        liste_mots = [elt[:-1] for elt in fichier_mots if elt and
+                      elt != "\n" and (syll in elt)]
+        chaine = ""
+        for i in range(25):
+            j = randint(0, len(liste_mots) - 1)
+            chaine += (liste_mots[j] + " ")
+        return chaine
+
+    def genererExemple(self, no):
+        exec("fichier_brut = open(\"exemple{}.txt\", \"r\")".format(no))
+        fichier = ([elt[:-1] for elt in fichier_brut.readlines() if elt and
+                   elt != "\n"])[1]
+        if len(fichier) > 4096:
+            fichier = fichier[:4096]
+        return (fichier + " ")
+
+    def genererNom(self, nom):
+        # Fonctionne que sous linux pour vérifier l'existence du fichier
+        #assert (popen("ls | grep \"{}\"".format(nom))).read()
+        fichier_brut = open(nom, "r")
+        fichier = ([elt[:-1] for elt in fichier_brut.readlines() if elt and
+                   elt != "\n"])[0]
+        if len(fichier) > 4096:
+            fichier = fichier[:4096]
+        return (fichier + " ")
+
     #.###Méthode (slot) `getDerCar`
     #.Méthode permettant de récupérer le caractère tapé dans la boîte de texte 
     #.suite à un signal `textChanged`
@@ -276,11 +349,6 @@ class ModuleApplication(QMainWindow, Ui_Module):
                 self.dernier_juste = False
                 self.car_faux += 1
                 self.rouge()
-                self.historique_tape.append((0.0,
-                                             self.car_attendu.encode("utf8"),
-                                             str(self.der_car_T.toUtf8()),
-                                             0.0,
-                                             -1))
             #.Enfin, on appelle la méthode `genererStats` pour mettre à jour 
             #.les statistiques
             self.genererStats()
@@ -310,7 +378,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.Si on est bientôt à cours de texte dans la partie droite 
         #.(`texte_g`), on double le texte (on le reboucle sur lui-même)
         if (len(self.texte) - self.pos_texte) <= 23:
-            self.texte += (u" " + self.texte)
+            self.genererTexte()
         #.Enfin, on met à jour les labels
         self.updateTexteLabel()
 

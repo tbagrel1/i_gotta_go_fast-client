@@ -40,6 +40,7 @@ class MenuApplication(QMainWindow, Ui_Menu):
         self.setupUi(self)
 
         self.param = []
+        self.pseudo = ""
 
         self.BoutonCommencer.clicked.connect(self.commencer)
         self.BoutonQuitter.clicked.connect(self.quitter)
@@ -52,17 +53,29 @@ class MenuApplication(QMainWindow, Ui_Menu):
         self.FenetreBVN.show()
 
     def getParam(self):
-        #.On récupère les paramètres :
-        #.self.param[0] = self.getTexteMode()
-        #.self.param[1] = self.getTemps()
-        #....
-        #.En attendant :
-        self.param = ["test"]
+        temps = raw_input("Temps\n>>> ")
+        if not temps:
+            temps = 30
+        else:
+            temps = int(temps)
+        texte_mode = raw_input("Mode texte\n>>> ")
+        if not texte_mode:
+            texte_mode = "expl::1"
+        self.param = [temps, texte_mode]
+
+    def getPseudo(self):
+        pseudo = raw_input("Pseudo\n>>> ")
+        if len(pseudo) > 20:
+            pseudo = pseudo[:20]
+        if not pseudo:
+            pseudo = "Anonyme"
+        self.pseudo = pseudo
 
     @pyqtSlot()
     def commencer(self):
         self.getParam()
-        self.Module = module.ModuleApplication(self.param)
+        self.getPseudo()
+        self.Module = module.ModuleApplication(self.param, self.pseudo)
         self.Module.termine.connect(self.termineModule)
         self.Module.setWindowModality(Qt.ApplicationModal)
         self.hide()
