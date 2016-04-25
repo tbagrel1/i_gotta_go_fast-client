@@ -271,6 +271,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
     def genererMotsFR(self, nb):
         fichier_mots_brut = open("dictionnaire_freq.txt", "r")
         fichier_mots = fichier_mots_brut.readlines()
+        fichier_mots_brut.close()
         liste_mots = ([elt[:-1] for elt in fichier_mots if elt and
                        elt != "\n"])[:nb]
         chaine = ""
@@ -282,6 +283,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
     def genererSyll(self, syll):
         fichier_mots_brut = open("dictionnaire_syll.txt", "r")
         fichier_mots = fichier_mots_brut.readlines()
+        fichier_mots_brut.close()
         liste_mots = [elt[:-1] for elt in fichier_mots if elt and
                       elt != "\n" and (syll in elt)]
         chaine = ""
@@ -294,6 +296,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         exec("fichier_brut = open(\"exemple{}.txt\", \"r\")".format(no))
         fichier = ([elt[:-1] for elt in fichier_brut.readlines() if elt and
                    elt != "\n"])[1]
+        fichier_brut.close()
         if len(fichier) > 4096:
             fichier = fichier[:4096]
         return (fichier + " ")
@@ -304,6 +307,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         fichier_brut = open(nom, "r")
         fichier = ([elt[:-1] for elt in fichier_brut.readlines() if elt and
                    elt != "\n"])[0]
+        fichier_brut.close()
         if len(fichier) > 4096:
             fichier = fichier[:4096]
         return (fichier + " ")
