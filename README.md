@@ -1,4 +1,4 @@
-#Projet ISN : I Gonna Go Fast
+#Projet ISN : I Gotta Go Fast
 
 ##Présentation du projet
 
