@@ -38,7 +38,7 @@ class ThreadTimer(QThread):
     temps_change_signal = pyqtSignal(float)
     finished = pyqtSignal()
 
-    #.###Méthode d'initialisation `__init__`  
+    #.###Méthode d'initialisation `__init__
     #.Méthode permettant d'initialiser la classe
     def __init__(self, temps_choisi=60):
         #.On hérite de la méthode `__init__` de la classe parente (`QThread`)
@@ -56,7 +56,7 @@ class ThreadTimer(QThread):
 
     #.###Méthode principale `run`  
     #.Cette méthode correspond au corps du thread, qui est appelée lors du
-    #.`.start()`, et dont la fin correspond à la fin de l'execution du thread
+    #.`start()`, et dont la fin correspond à la fin de l'execution du thread
     def run(self):
         #.On prend le temps lors du lancement et on désactive la pause
         self.temps_depart = time()
@@ -78,13 +78,13 @@ class ThreadTimer(QThread):
                 self.temps_fini_signal.emit()
                 return
             #.Sinon, on met à jour le temps (signal `temps_change`), et on
-            #.fait hiberner le programme pendant `0,1` s
+            #.fait hiberner le programme pendant `0,01` s
             else:
                 self.temps_change_signal.emit(self.temps_restant)
                 sleep(0.01)
             #.Si la pause est activée, on prend le temps de début de pause  
             #.Ensuite, tant que la pause est activée et que le timer ne doit 
-            #.pas être quitté, le programme hiberne par pas de `0,1` s
+            #.pas être quitté, le programme hiberne par pas de 0,01 s
             if self.jeton_pause:
                 self.temps_debut_pause = time()
                 while self.jeton_pause and not self.jeton_quitter:
@@ -147,27 +147,6 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.texte = ""
         self.genererTexte()
 
-        ##.--------------------------------------------------------------------
-        # #.*A remplacer : Ceci sera ensuite remplacé par le menu !*  
-        # #.On ouvre le fichier de configuration `module.conf`
-        # fichier_conf_brut = open("module.conf", "r")
-        # #.On lit le fichier et on récupère les paramètres suivants :
-        # #.- Temps choisi
-        # #.- Nom (ou chemin) du fichier qui contient le texte à taper
-        # fichier_conf = fichier_conf_brut.readlines()
-        # self.temps_choisi = float((fichier_conf[1])[:-1])
-        # nom_fichier_texte = (fichier_conf[3])[:-1]
-        # #.On ouvre ensuite le fichier qui contient le texte à taper
-        # fichier_texte_brut = open(nom_fichier_texte, "r")
-        # self.texte = fichier_texte_brut.read().decode("utf-8")
-        ##.--------------------------------------------------------------------
-
-        # #.On enlève les retours à la ligne (remplacés par des espaces) et les 
-        # #.doubles espaces de ce texte, impossible ou problématiques à taper 
-        # #.pour l'utilisateur
-        # self.texte = (re.sub(r"\n", r" ", self.texte)).strip()
-        # self.texte = re.sub(r" {2,}", r" ", self.texte)
-
         #.On définit les attributs
         self.recommencerV = False
         self.pos_texte = 0
@@ -196,6 +175,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.nombre_mots_precedant = 0
         self.historique_tape = []
         self.car_attendu_precedant = ""
+        self.joker = False
+
         #.On créé l'attribut `Timer`, qui est une instance du `ThreadTimer` 
         #.déclaré plus haut.  
         #.On lui passe en argument le temps choisi dans le fichier de 
@@ -207,6 +188,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
         #.On lance une première fois les méthodes `updateTexteLabel` et 
         #.`temps_change` pour régler le GUI sur la position de départ
+        self.updateTexteLabel()
+        self.temps_change(self.temps_choisi)
 
         #.On fixe la police des labels en police à chasse fixe (monospace)  
         #.Cela permet d'éviter l'erreur avec Windows qui ne reconnait pas la 
@@ -218,19 +201,20 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.LabelTexteGauche.setFont(Police)
         self.LabelTapeDroit.setFont(Police)
         self.EntryTapeCentre.setFont(Police)
-        self.updateTexteLabel()
-        self.temps_change(self.temps_choisi)
 
         #.Quand le texte dans la boîte est changé (frappe de l'utilisateur), 
         #.on appelle la méthode `getDerCar` en charge de récupérer la saisie
         self.EntryTapeCentre.textChanged.connect(self.getDerCar)
+
         #.Quand on clique sur le bouton start/pause, on appelle la méthode 
         #.`togglePauseM` en charge du basculement start/pause
         self.BoutonStartPause.clicked.connect(self.togglePauseM)
+
         #.Quand on clique sur le bouton quitter, on appelle la méthode
         #.`quitterM` en charge de fermer proprement le timer avant de quitter 
         #.le GUI
         self.BoutonQuitter.clicked.connect(self.quitterM)
+
         #.On connecte les signaux du timer `temps_change` et `temps_fini` aux 
         #.méthodes du GUI associées, qui servent à interpréter quand le temps 
         #.restant change et quand le temps est fini
@@ -261,12 +245,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
                 self.texte += (self.genererNom((mtxt_s[2])[3:-3]))\
                     .decode("utf-8")
             elif mtxt_s[1] == "entier":
-                texte_temp = ((mtxt_s[2])[3:-3]).strip()
-                if len(texte_temp) > 4096:
-                    texte_temp = texte_temp[:4096]
-                self.texte += (texte_temp + " ").decode("utf-8")
-
-        assert self.texte
+                self.texte += (self.genererEntier((mtxt_s[2])[3:-3]))\
+                    .decode("utf-8")
 
     def genererMotsFR(self, nb):
         fichier_mots_brut = open("dictionnaire_freq.txt", "r")
@@ -302,15 +282,20 @@ class ModuleApplication(QMainWindow, Ui_Module):
         return (fichier + " ")
 
     def genererNom(self, nom):
-        # Fonctionne que sous linux pour vérifier l'existence du fichier
-        #assert (popen("ls | grep \"{}\"".format(nom))).read()
         fichier_brut = open(nom, "r")
-        fichier = ([elt[:-1] for elt in fichier_brut.readlines() if elt and
-                   elt != "\n"])[0]
-        fichier_brut.close()
+        fichier = fichier_brut.read()
+        fichier = (re.sub(r"\n", r" ", fichier)).strip()
+        fichier = re.sub(r" {2,}", r" ", fichier).strip()
         if len(fichier) > 4096:
             fichier = fichier[:4096]
         return (fichier + " ")
+
+    def genererEntier(self, texte):
+        texte = (re.sub(r"\n", r" ", texte)).strip()
+        texte = re.sub(r" {2,}", r" ", texte).strip()
+        if len(texte) > 4096:
+            texte = texte[:4096]
+        return (texte + " ")
 
     #.###Méthode (slot) `getDerCar`
     #.Méthode permettant de récupérer le caractère tapé dans la boîte de texte 
@@ -341,15 +326,27 @@ class ModuleApplication(QMainWindow, Ui_Module):
             #.justes et on met en vert les flèches (méthode `vert`)
             self.der_car_T = self.der_car_T[0]
             if self.der_car_T == self.car_attendu:
+                self.joker = False
                 self.dernier_juste = True
                 self.car_attendu_precedant = self.car_attendu
                 self.car_justes += 1
                 self.vert()
                 self.decalerTexte()
+            # À faire
+            elif self.der_car_T == "$":
+                self.dernier_juste = True
+                self.car_attendu_precedant = self.car_attendu
+                self.LabelTapeFleche.setStyleSheet("")
+                self.joker = True
+                self.decalerTexte()
+            # Si caractère normalisé :
+            # À faire
+
             #.Sinon :  
             #.On ajoute 1 aux caractères faux et on met en rouge les flèches
             #.(méthode `rouge`)
             else:
+                self.joker = False
                 self.dernier_juste = False
                 self.car_faux += 1
                 self.rouge()
@@ -428,6 +425,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
             #.lancement (`premier_lancement_timer`)
             self.premier_lancement_timer = False
             self.jeton_pauseM = False
+            #.Pour le premier caractère, on prend un temps arbitraire de 0,5 s
             self.temps_score_precedant = time() - 0.5
             #.On lance ensuite le timer pour la première fois ;  
             self.Timer.start()
@@ -621,38 +619,42 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.Méthode permettant de calculer le score selon la nouvelle formule  
     #.*À détailler*
     def compterScore(self):
-        if self.dernier_juste:
-            temps_score = time()
-            temps_ecoule_l = temps_score - self.temps_score_precedant
-            inv_temps_pour_car = 1 / (temps_ecoule_l)
-            self.temps_score_precedant = temps_score
-            nombre_erreur_pour_car = self.car_faux - self.car_faux_precedant
-            self.car_faux_precedant = self.car_faux
-            inv_de_err_plus_un = 1 / (nombre_erreur_pour_car + 1)
-            #.On recherche le type de caractères
-            if self.der_car_T == " ":
-                coeff = 0.4
-            elif re.match(r"[a-z]", self.der_car_T):
-                coeff = 0.5
-            elif re.match(r"[A-Z]", self.der_car_T):
-                coeff = 0.8
-            elif re.match(r"[²&é\"'(-è_çà)=,;:!<]", self.der_car_T):
-                coeff = 1
-            elif re.match(r"[0-9°+?./§>]", self.der_car_T):
-                coeff = 1.2
-            else:
-                coeff = 1.6
-            ln_tps_plus_C_div_tps = (log(self.temps_choisi) + self.C_TEMPS) / \
-                self.temps_choisi
-            score_car = inv_temps_pour_car * inv_de_err_plus_un * \
-                ln_tps_plus_C_div_tps * coeff * self.C_SCORE
-            self.score += score_car
-            self.historique_tape.append((round(temps_ecoule_l, 2),
-                                         self.car_attendu_precedant
-                                         .encode("utf8"),
-                                         str(self.der_car_T.toUtf8()),
-                                         round(score_car, 2),
-                                         nombre_erreur_pour_car))
+        if not self.joker:
+            if self.dernier_juste:
+                temps_score = time()
+                temps_ecoule_l = temps_score - self.temps_score_precedant
+                inv_temps_pour_car = 1 / (temps_ecoule_l)
+                self.temps_score_precedant = temps_score
+                nombre_erreur_pour_car = self.car_faux -\
+                    self.car_faux_precedant
+                self.car_faux_precedant = self.car_faux
+                inv_de_err_plus_un = 1 / (nombre_erreur_pour_car + 1)
+                #.On recherche le type de caractères
+                if self.der_car_T == " ":
+                    coeff = 0.4
+                elif re.match(r"[a-z]", self.der_car_T):
+                    coeff = 0.5
+                elif re.match(r"[A-Z]", self.der_car_T):
+                    coeff = 0.8
+                elif re.match(r"[²&é\"'(-è_çà)=,;:!<]", self.der_car_T):
+                    coeff = 1
+                elif re.match(r"[0-9°+?./§>]", self.der_car_T):
+                    coeff = 1.2
+                else:
+                    coeff = 1.6
+                ln_tps_plus_C_div_tps = (log(self.temps_choisi) +
+                                         self.C_TEMPS) / self.temps_choisi
+                score_car = inv_temps_pour_car * inv_de_err_plus_un * \
+                    ln_tps_plus_C_div_tps * coeff * self.C_SCORE
+                self.score += score_car
+                self.historique_tape.append((round(temps_ecoule_l, 2),
+                                             self.car_attendu_precedant
+                                             .encode("utf8"),
+                                             str(self.der_car_T.toUtf8()),
+                                             round(score_car, 2),
+                                             nombre_erreur_pour_car))
 
-            #.On affiche le score arrondi à l'entier le plus proche dans le GUI
-            self.LabelScoreV.setText(unicode(str(int(round(self.score, 0)))))
+                #.On affiche le score arrondi à l'entier le plus proche dans
+                #.le GUI
+                self.LabelScoreV.setText(unicode(str(int(round(self.score,
+                                                               0)))))

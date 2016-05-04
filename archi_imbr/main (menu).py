@@ -114,10 +114,6 @@ class MenuApplication(QMainWindow, Ui_Menu):
             if self.CollerTexteR.isChecked():
                 texte = unicode(self.CollerTexteV.toPlainText())\
                     .encode("utf-8").strip()
-                texte = texte.replace("\n", " ").replace("  ", " ")
-                if len(texte) > 4096:
-                    texte = texte[:4096]
-                    self.CollerTexteV.setPlainText(texte.decode("utf-8"))
                 texte_mode = "perso::entier::{{{" + texte + "}}}"
             elif self.NomTexteR.isChecked():
                 nom = unicode(self.NomTexteV.text()).encode("utf-8").strip()

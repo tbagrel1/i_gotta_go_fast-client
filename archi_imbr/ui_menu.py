@@ -336,7 +336,7 @@ class Ui_Menu(object):
         self.TabSourceTexte.setTabText(self.TabSourceTexte.indexOf(self.TabExemple), _translate("Menu", "Exemple de texte", None))
         self.CollerTexteR.setText(_translate("Menu", "&Texte (copier-coller) :", None))
         self.NomTexteR.setText(_translate("Menu", "Nom du fichier :", None))
-        self.TabSourceTexte.setTabText(self.TabSourceTexte.indexOf(self.TabPerso), _translate("Menu", "Texte perso", None))
+        self.TabSourceTexte.setTabText(self.TabSourceTexte.indexOf(self.TabPerso), _translate("Menu", "Texte personnel", None))
         self.LabelLancez.setText(_translate("Menu", "4. Lancez-vous !", None))
         self.BoutonCommencer.setText(_translate("Menu", "Commencer", None))
         self.BoutonQuitter.setText(_translate("Menu", "Quitter", None))

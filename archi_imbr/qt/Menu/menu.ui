@@ -514,7 +514,7 @@
      </widget>
      <widget class="QWidget" name="TabPerso">
       <attribute name="title">
-       <string>Texte perso</string>
+       <string>Texte personnel</string>
       </attribute>
       <widget class="QRadioButton" name="CollerTexteR">
        <property name="geometry">
