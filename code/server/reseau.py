@@ -24,7 +24,9 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 def unpick(msg):
 	doc_pick = open("pickle.txt", "wb")
 	doc_pick.write(msg)
-	return pickle.load(open("pickle.txt", "rb"))
+	a = pickle.load(open("pickle.txt", "rb"))
+	doc_pick.close()
+	return a
 
 mot_de_passe = "                "
 cle_16o = "                "
