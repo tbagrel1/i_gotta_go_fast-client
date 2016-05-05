@@ -17,6 +17,7 @@ from ui_fenetrebvn import Ui_FenetreBVN
 #.Import des bibliothèques standards de `python`
 import sys
 import os
+import pickle
 from time import time, sleep, localtime
 from random import randint
 from os import system, popen
@@ -734,7 +735,24 @@ class ModuleApplication(QMainWindow, Ui_Module):
         crypterScore.crypterScoreAttente(dico_score)
 
     def stockerLocalScore(self, dico_score):
-        print(dico_score)
+        try:
+            fichier_db = open("local_db.db", "rb")
+            mon_pickler = pickle.Unpickler(fichier_db)
+            try:
+                liste = mon_pickler.load()
+            except:
+                liste = []
+            finally:
+                fichier_db.close()
+        except:
+            liste = []
+        print(liste)
+        liste.append(dico_score)
+        liste = sorted(liste, key=lambda dico: dico["score"], reverse=True)
+        fichier_db = open("local_db.db", "wb")
+        mon_pickler = pickle.Pickler(fichier_db)
+        mon_pickler.dump(liste)
+        fichier_db.close()
 
 #.##Classe `MenuApplication`
 #.Cette classe hérite des classes `QMainWindow` et `Ui_Menu` et permet la 
