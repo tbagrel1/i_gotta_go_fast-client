@@ -39,9 +39,8 @@ def crypterScoreAttente(dico_score):
     mon_pickler.dump(liste)
     fichier_temp.close()
 
-    fichier_temp = open("temp.tmp", "rb")
-    texte = fichier_temp.read()
-    fichier_temp.close()
+    with open("temp.tmp", "rb") as fichier_temp:
+        texte = fichier_temp.read()
     os.remove("temp.tmp")
 
     texte_crypte = cle_fernet.encrypt(texte)
@@ -49,7 +48,8 @@ def crypterScoreAttente(dico_score):
     fichier_score_attente.write(texte_crypte + "||||||||||")
     fichier_score_attente.close()
 
-# def envoyerScore(self, score):
+def envoyerScoreAttente():
+    pass
 #     client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #     client_to_serv.connect(("localhost", 25565))
 
@@ -81,7 +81,8 @@ def crypterScoreAttente(dico_score):
 #             if msg_recu == "OK":
 #                 return True
 
-# def recevoirScore(self):
+def recupererScore():
+    pass
 #     client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #     client_to_serv.connect(("localhost", 25565))
 

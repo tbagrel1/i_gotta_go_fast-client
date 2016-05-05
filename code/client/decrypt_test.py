@@ -13,7 +13,7 @@
 
 import pickle
 import base64
-# import os
+import os
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
@@ -49,5 +49,7 @@ for elt in message_crypte.split("||||||||||")[:-1]:
     fichier = open("pouet.txt", "rb")
     mon_pickler = pickle.Unpickler(fichier)
     elt_decrypte_2 = mon_pickler.load()
+    fichier.close()
+    os.remove("pouet.txt")
     print(type(elt_decrypte_2))
     print(elt_decrypte_2)

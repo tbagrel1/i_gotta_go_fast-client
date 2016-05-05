@@ -722,6 +722,25 @@ class ModuleApplication(QMainWindow, Ui_Module):
         ss = str(dh[5])
         while len(ss) < 2:
             ss = "0" + ss
+        mds = self.mode_texte.split("::")
+        if mds[0] == "expl":
+            mode_texte_enh = "Texte d'exemple {}"\
+                .format(mds[1])
+        elif mds[0] == "syll":
+            mode_texte_enh = "Mots avec la syllabe -{}"\
+                .format(mds[1])
+        elif mds[0] == "mots_fr":
+            mode_texte_enh = "Les {} mots les plus courants"\
+                .format(mds[1])
+        elif mds[0] == "perso":
+            if mds[1] == "nom":
+                mode_texte_enh = "Texte personnalisé : \"{}\""\
+                    .format(mds[2][3:-3].split("/")[-1])
+            elif mds[1] == "entier":
+                mode_texte_enh = "Texte personnalisé : {}..."\
+                    .format(mds[2][3:-3][:min(10, len(mds[2][3:-3]))])
+        else:
+            mode_texte_enh = "Inconnu"
         dico_score = {"pseudo": self.pseudo,
                       "score": int(round(self.score, 0)),
                       "cpm": round(self.car_min, 1),
@@ -730,11 +749,21 @@ class ModuleApplication(QMainWindow, Ui_Module):
                       "d_h": "{}-{}-{} {}:{}:{}".format(AAAA, MM, JJ, hh, mm,
                                                         ss),
                       "texte_mode": self.mode_texte,
-                      "texte_t": self.texte_d.encode("utf-8")}
+                      "texte_t": self.texte_d.encode("utf-8"),
+                      "texte_mode_enh": mode_texte_enh}
         self.stockerLocalScore(dico_score)
         crypterScore.crypterScoreAttente(dico_score)
+        #crypterScore.envoyerScoreAttente()
+        #self.recupererScore()
 
     def stockerLocalScore(self, dico_score):
+        dico_score_raccourci = {"pseudo": dico_score["pseudo"],
+                                "score": dico_score["score"],
+                                "cpm": dico_score["cpm"],
+                                "mpm": dico_score["mpm"],
+                                "temps": dico_score["temps"],
+                                "d_h": dico_score["d_h"],
+                                "texte_mode_enh": dico_score["texte_mode_enh"]}
         try:
             fichier_db = open("local_db.db", "rb")
             mon_pickler = pickle.Unpickler(fichier_db)
@@ -746,12 +775,18 @@ class ModuleApplication(QMainWindow, Ui_Module):
                 fichier_db.close()
         except:
             liste = []
-        print(liste)
-        liste.append(dico_score)
+        liste.append(dico_score_raccourci)
         liste = sorted(liste, key=lambda dico: dico["score"], reverse=True)
         fichier_db = open("local_db.db", "wb")
         mon_pickler = pickle.Pickler(fichier_db)
         mon_pickler.dump(liste)
+        fichier_db.close()
+
+    def recupererScore(self):
+        liste_score_raccourcis = crypterScore.recupererScore()
+        fichier_db = open("local_db.db", "wb")
+        mon_pickler = pickle.Pickler(fichier_db)
+        mon_pickler.dump(liste_score_raccourcis)
         fichier_db.close()
 
 #.##Classe `MenuApplication`

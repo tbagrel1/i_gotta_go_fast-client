@@ -1,31 +1,27 @@
 (lp0
 (dp1
-S'temps'
+S'texte_mode_enh'
 p2
+S"Texte d'exemple 1"
+p3
+sS'cpm'
+p4
+F416.9
+sS'mpm'
+p5
+F91.2
+sS'pseudo'
+p6
+S'Anonyme'
+p7
+sS'temps'
+p8
 I5
 sS'd_h'
-p3
-S'2016-05-05 18:35:25'
-p4
-sS'score'
-p5
-I1669
-sS'cpm'
-p6
-F391.4
-sS'texte_mode'
-p7
-S'expl::1'
-p8
-sS'texte_t'
 p9
-S'L\xc3\xa9o le cerf court dans la for\xc3\xaat.'
+S'2016-05-05 21:45:05'
 p10
-sS'mpm'
+sS'score'
 p11
-F88.2
-sS'pseudo'
-p12
-S'Anonyme'
-p13
+I1889
 sa.
