@@ -1,7 +1,7 @@
 import socket
 
 client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_to_serv.connect(("pi-pc", 25565))
+client_to_serv.connect(("localhost", 25565))
 
 
 msg_recu = ""
