@@ -28,17 +28,9 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 def unpick(msg):
-<<<<<<< HEAD
     doc_pick = open("pickle.txt", "wb")
     doc_pick.write(msg)
     return pickle.load(open("pickle.txt", "rb"))
-=======
-	doc_pick = open("pickle.txt", "wb")
-	doc_pick.write(msg)
-	a = pickle.load(open("pickle.txt", "rb"))
-	doc_pick.close()
-	return a
->>>>>>> 2d016ac338601856caa3cbf005e2b40cb82ba18d
 
 #.Tout ce qui est dans ce bloc correspond au cryptage symétrique
 #.On prépare la clé Fernet qui permet de crypter et de décrypter
