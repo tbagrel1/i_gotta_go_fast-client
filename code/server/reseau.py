@@ -62,8 +62,3 @@ while True:
 	serv_to_client.send("Ok !\end")
 	serv_to_client.close()
 
-
-msg_recu_final = unpick(decode(msg_recu))
-
-
-
