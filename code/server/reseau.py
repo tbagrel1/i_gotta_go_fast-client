@@ -95,3 +95,4 @@ while True:
 		serv_to_client.send("OK\end")
 		....
 		serv_to_client.send("OK\end")
+		serv_to_client.close()
