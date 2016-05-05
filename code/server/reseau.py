@@ -94,4 +94,5 @@ while True:
 		msg_recu = ""
 		serv_to_client.send("OK\end")
 		....
-		serv_to_client.send("OK\end")
+		serv_to_client.send(msg + "\end")
+		serv_to_client.close()
