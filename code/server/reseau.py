@@ -91,6 +91,7 @@ while True:
 		serv_to_client.send("Ok !\end")
 		serv_to_client.close()
 	if msg_recu == "PULL\end":
+		msg_recu = ""
 		serv_to_client.send("OK\end")
 		....
 		serv_to_client.send("OK\end")
