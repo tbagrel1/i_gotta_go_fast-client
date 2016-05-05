@@ -15,7 +15,9 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
+#.Ici sont stocké les sommes de notre progamme client et elle servent a savoir
+#.si l'envoyeur est bien notre client
+som_ref = (...,...,...)
 # .##Format de données reçues par le serveur
 #.On reçoit du client plusieurs chaînes de caractères correspondant à une
 #.liste contenant le code de la fonction de cryptage, la checksum du fichier
@@ -25,15 +27,13 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 #.On recupere une ligne "pickle" correspondant au score, la
 #.fonctions permet de rendre lisible les données que l'on
 #.recupere sous forme texte et les passer sous forme python
-som_ref = (...,...,...)
-
-def putdata(score):
-    print(score)
 
 def unpick(msg):
     doc_pick = open("pickle.txt", "wb")
     doc_pick.write(msg)
     doc_pick.close()
+    #.On test si les données n'ont pas été modifier, et qu'elle sont lisible
+    #.afin de les exploité
     try:
         a = pickle.load(open("pickle.txt", "rb"))
         doc_pick.close()
@@ -41,10 +41,15 @@ def unpick(msg):
         #.informant que c'est bien notre programme qui a envoyer les données
         if a[0] in som_ref:
             a = a[1]
+            #.Si oui, alors on le met dans notre database
             putdata(a)
+    #.Si les données ont été modifier, alors nous ne les regardons même pas 
+    #.au cas ou il y aurais un code malfaisant
     except:
         doc_pick.close()
 
+def putdata(score):
+    print(score)
 #.Tout ce qui est dans ce bloc correspond au cryptage symétrique
 #.On prépare la clé Fernet qui permet de crypter et de décrypter
 #------------------------------------------------------------------------------
@@ -77,7 +82,7 @@ while True:
     print(infos_co)
     #.On envoi un message au client pour dire qu'il est bien connecté
     serv_to_client.send("OK\end")
-    #.On recoit la commande push ou pull du clien, on utilise la boucle while, 
+    #.On recoit la commande push ou pull du client, on utilise la boucle while, 
     #.si la demande est trop longue (en cas de test d'attaque de la base de 
     #.donnée)
     msg_recu = ""
@@ -85,13 +90,13 @@ while True:
         msg_recu += serv_to_client.recv(1024)
     msg_recu = msg_recu[:-4]
     print(msg_recu)
-    #.On regarde ce que veut demander le clien au serveur entre 
+    #.On regarde ce que veut demander le client au serveur entre 
     #.push et pull, ici push
     if msg_recu == "PUSH":
         #.On previent que le mode push est bien actif, et qu'il peut envoyer 
         #.les données.
         serv_to_client.send("OK\end")
-        #.On recoit le score du clien, comme on ne peut recevoir que 1024 
+        #.On recoit le score du client, comme on ne peut recevoir que 1024 
         #.carractère a la fois, on ajoute chaque 1024 carractère les un apres 
         #.les autres
         msg_recu = ""
@@ -118,20 +123,19 @@ while True:
         #.code, ici en l'occurence on envoi les scores sous forme de dictionaire
         #.avec en plus deux clé permetant de verifier la provenance des données
         unpick(msg_decrypte)
-
-
-
+        #.On envoi OK avec \end a la fin pour signaler au client quand l'envoi 
+        #.est fini
         serv_to_client.send("OK\end")
 
-    #.On regarde ce que veut demander le clien au serveur entre 
+    #.On regarde ce que veut demander le client au serveur entre 
     #.push et pull, ici pull
     elif msg_recu == "PULL":
         #.On previent que le mode pul est bien actif, et qu'il peut se preparer 
         #.a recevoir les données de la database.
         serv_to_client.send("OK\end")
-        #.On envoi la database au clien avec un \end a la fin pour lui signaler 
+        #.On envoi la database au client avec un \end a la fin pour lui signaler 
         #.quand l'envoi est fini
         serv_to_client.send("database" + "\end")
-    #.On ferme la connection avec le clien afin de laisser la place a un futur 
-    #.clien qui voudrais se conecter
+    #.On ferme la connection avec le client afin de laisser la place a un futur 
+    #.client qui voudrais se conecter
     serv_to_client.close()
