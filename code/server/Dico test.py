@@ -6,5 +6,5 @@ score_ref = {"pseudo": "test1",
              "mpm": 40,
              "temps": 120,
              "d_h": "2016-04-27 13:15:02",
-             "texte_t": "Léo le cerf co",
-             "texte_mode": "expl::1"}
+             "texte_mode": "expl::1",
+             "texte_t": "Léo le cerf co"}
