@@ -5,7 +5,7 @@ import socket
 
 class HandleScoreClient(object):
     def __init__(self):
-        object.__init__()
+        object.__init__(self)
         self.suppr_score = False
 
     def envoyerScore(self, score):
@@ -29,7 +29,7 @@ class HandleScoreClient(object):
             if msg_recu == "OK":
 
                 # On envoie le score
-                # client_to_serv.send(score + "\end")
+                client_to_serv.send(score + "\end")
 
                 msg_recu = ""
                 while msg_recu[-4:] != "\end":
