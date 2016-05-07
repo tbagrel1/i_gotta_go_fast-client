@@ -541,7 +541,7 @@
       <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="text">
-      <string>I gonna go fast - IGGF - V1.0.0 - Beta</string>
+      <string>I Gotta Go Fast - IGGF - V1.0.0 - Beta</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

@@ -344,7 +344,7 @@ class Ui_Module(object):
         self.LabelCarMin.setText(_translate("Module", "Caractères / min", None))
         self.BoutonStartPause.setText(_translate("Module", "Commencer", None))
         self.BoutonQuitter.setText(_translate("Module", "Quitter", None))
-        self.LabelInfo.setText(_translate("Module", "I gonna go fast - IGGF - V1.0.0 - Beta", None))
+        self.LabelInfo.setText(_translate("Module", "I Gotta Go Fast - IGGF - V1.0.0 - Beta", None))
         self.LabelTexteDroite.setToolTip(_translate("Module", "<html><head/><body><p>22 caractères de chaque côté</p></body></html>", None))
         self.LabelTapeDroit.setToolTip(_translate("Module", "<html><head/><body><p>8 caractères</p></body></html>", None))
         self.LabelTapeFleche.setToolTip(_translate("Module", "<html><head/><body><p>Il faut que l\'on fasse clignoter ce label si le caractère est juste ou faux</p></body></html>", None))

@@ -13,11 +13,13 @@ from PyQt4.QtGui import *
 from ui_menu import Ui_Menu
 from ui_module import Ui_Module
 from ui_fenetrebvn import Ui_FenetreBVN
+import crypterScore
 
 #.Import des bibliothèques standards de `python`
 import sys
 import os
 import pickle
+import webbrowser
 from time import time, sleep, localtime
 from random import randint
 from os import system, popen
@@ -28,7 +30,7 @@ import re
 import atexit
 
 import platform
-import crypterScore
+import unicodedata
 
 #.#Déclaration des classes
 
@@ -50,6 +52,8 @@ class FenetreBVNApplication(QMainWindow, Ui_FenetreBVN):
         #.On initialise les widgets décris dans le fichier auxiliaire 
         #.`ui_fenetrebvn.py` créé avec *Qt Creator* et `PyQt`
         self.setupUi(self)
+
+        self.LabelIcone.setPixmap(QPixmap(os.getcwd() + "/logo1.png"))
 
         self.BoutonContinuer.clicked.connect(self.continuer)
         self.BoutonQuitter.clicked.connect(self.quitter)
@@ -214,9 +218,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.reussite = 0.0
         self.erreurs = 0.0
         self.nombre_mots_precedant = 0
-        self.historique_tape = []
         self.car_attendu_precedant = ""
-        self.joker = False
+        self.coeff_pre = 1.0
 
         #.On créé l'attribut `Timer`, qui est une instance du `ThreadTimer` 
         #.déclaré plus haut.  
@@ -315,28 +318,28 @@ class ModuleApplication(QMainWindow, Ui_Module):
 
     def genererExemple(self, no):
         exec("fichier_brut = open(\"exemple{}.txt\", \"r\")".format(no))
-        fichier = ([elt[:-1] for elt in fichier_brut.readlines() if elt and
-                   elt != "\n"])[1]
-        fichier_brut.close()
-        if len(fichier) > 4096:
-            fichier = fichier[:4096]
-        return (fichier + " ")
+        fichier = fichier_brut.readlines()
+        texte = ""
+        for ligne in fichier:
+            if ligne[0] != "#":
+                texte += ligne
+        return (self.normaliserTexte(texte) + " ")
 
     def genererNom(self, nom):
         fichier_brut = open(nom, "r")
         fichier = fichier_brut.read()
-        fichier = (re.sub(r"\n", r" ", fichier)).strip()
-        fichier = re.sub(r" {2,}", r" ", fichier).strip()
-        if len(fichier) > 4096:
-            fichier = fichier[:4096]
-        return (fichier + " ")
+        fichier_brut.close()
+        return (self.normaliserTexte(fichier) + " ")
 
     def genererEntier(self, texte):
-        texte = (re.sub(r"\n", r" ", texte)).strip()
-        texte = re.sub(r" {2,}", r" ", texte).strip()
+        return (self.normaliserTexte(texte) + " ")
+
+    def normaliserTexte(self, texte):
+        texte = (re.sub(r"[\n\t\b\a\r]", r" ", texte)).strip()
+        texte = (re.sub(r" {2,}", r" ", texte.strip()))
         if len(texte) > 4096:
             texte = texte[:4096]
-        return (texte + " ")
+        return texte
 
     #.###Méthode (slot) `getDerCar`
     #.Méthode permettant de récupérer le caractère tapé dans la boîte de texte 
@@ -362,12 +365,17 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.`getDerCar` et `interpreterDerCar` se déclenchent après le `clear`
         #. de la boîte)
         if self.der_car_T != "":
+            #.On calcule les caractères normalisés
+            car_attendu_dec = unicodedata.normalize('NFKD', self.car_attendu)
+            car_attendu_norm = car_attendu_dec.encode('ascii', 'ignore')
+            car_attendu_norm = unicode(car_attendu_norm)
+
             #.Si le caractère tapé est bien le caractère attendu :  
             #.On appelle la méthode `decalerTexte`, on ajoute 1 aux caractères 
             #.justes et on met en vert les flèches (méthode `vert`)
             self.der_car_T = self.der_car_T[0]
             if self.der_car_T == self.car_attendu:
-                self.joker = False
+                self.coeff_pre = 1.0
                 self.dernier_juste = True
                 self.car_attendu_precedant = self.car_attendu
                 self.car_justes += 1
@@ -375,19 +383,23 @@ class ModuleApplication(QMainWindow, Ui_Module):
                 self.decalerTexte()
             # À faire
             elif self.der_car_T == "$":
+                self.coeff_pre = 0.0
                 self.dernier_juste = True
                 self.car_attendu_precedant = self.car_attendu
                 self.LabelTapeFleche.setStyleSheet("")
-                self.joker = True
                 self.decalerTexte()
             # Si caractère normalisé :
-            # À faire
+            elif self.der_car_T == car_attendu_norm:
+                self.coeff_pre = 0.5
+                self.dernier_juste = True
+                self.car_attendu_precedant = self.car_attendu
+                self.vert()
+                self.decalerTexte()
 
             #.Sinon :  
             #.On ajoute 1 aux caractères faux et on met en rouge les flèches
             #.(méthode `rouge`)
             else:
-                self.joker = False
                 self.dernier_juste = False
                 self.car_faux += 1
                 self.rouge()
@@ -662,45 +674,38 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.Méthode permettant de calculer le score selon la nouvelle formule  
     #.*À détailler*
     def compterScore(self):
-        if not self.joker:
-            if self.dernier_juste:
-                temps_score = time()
-                temps_ecoule_l = temps_score - self.temps_score_precedant
-                inv_temps_pour_car = 1 / (temps_ecoule_l)
-                self.temps_score_precedant = temps_score
-                nombre_erreur_pour_car = self.car_faux -\
-                    self.car_faux_precedant
-                self.car_faux_precedant = self.car_faux
-                inv_de_err_plus_un = 1 / (nombre_erreur_pour_car + 1)
-                #.On recherche le type de caractères
-                if self.der_car_T == " ":
-                    coeff = 0.4
-                elif re.match(r"[a-z]", self.der_car_T):
-                    coeff = 0.5
-                elif re.match(r"[A-Z]", self.der_car_T):
-                    coeff = 0.8
-                elif re.match(r"[²&é\"'(-è_çà)=,;:!<]", self.der_car_T):
-                    coeff = 1
-                elif re.match(r"[0-9°+?./§>]", self.der_car_T):
-                    coeff = 1.2
-                else:
-                    coeff = 1.6
-                ln_tps_plus_C_div_tps = (log(self.temps_choisi) +
-                                         self.C_TEMPS) / self.temps_choisi
-                score_car = inv_temps_pour_car * inv_de_err_plus_un * \
-                    ln_tps_plus_C_div_tps * coeff * self.C_SCORE
-                self.score += score_car
-                self.historique_tape.append((round(temps_ecoule_l, 2),
-                                             self.car_attendu_precedant
-                                             .encode("utf8"),
-                                             str(self.der_car_T.toUtf8()),
-                                             round(score_car, 2),
-                                             nombre_erreur_pour_car))
+        if self.dernier_juste:
+            temps_score = time()
+            temps_ecoule_l = temps_score - self.temps_score_precedant
+            inv_temps_pour_car = 1 / (temps_ecoule_l)
+            self.temps_score_precedant = temps_score
+            nombre_erreur_pour_car = self.car_faux -\
+                self.car_faux_precedant
+            self.car_faux_precedant = self.car_faux
+            inv_de_err_plus_un = 1 / (nombre_erreur_pour_car + 1)
+            #.On recherche le type de caractères
+            if self.der_car_T == " ":
+                coeff = 0.4
+            elif re.match(r"[a-z]", self.der_car_T):
+                coeff = 0.5
+            elif re.match(r"[A-Z]", self.der_car_T):
+                coeff = 0.8
+            elif re.match(r"[²&é\"'(-è_çà)=,;:!<]", self.der_car_T):
+                coeff = 1
+            elif re.match(r"[0-9°+?./§>]", self.der_car_T):
+                coeff = 1.2
+            else:
+                coeff = 1.6
+            ln_tps_plus_C_div_tps = (log(self.temps_choisi) +
+                                     self.C_TEMPS) / self.temps_choisi
+            score_car = inv_temps_pour_car * inv_de_err_plus_un * \
+                ln_tps_plus_C_div_tps * coeff * self.C_SCORE * self.coeff_pre
+            self.score += score_car
 
-                #.On affiche le score arrondi à l'entier le plus proche dans
-                #.le GUI
-                self.LabelScoreV.setText(unicode(str(int(round(self.score,
-                                                               0)))))
+            #.On affiche le score arrondi à l'entier le plus proche dans
+            #.le GUI
+            self.LabelScoreV.setText(unicode(str(int(round(self.score,
+                                                           0)))))
 
     def gererScore(self):
         dh = localtime()
@@ -803,6 +808,9 @@ class MenuApplication(QMainWindow, Ui_Menu):
         #.On initialise les widgets décris dans le fichier auxiliaire 
         #.`ui_menu.py` créé avec *Qt Creator* et `PyQt`
         self.setupUi(self)
+
+        self.LabelIcone.setPixmap(QPixmap(os.getcwd() + "/logo2.png"))
+
         self.majTextesEx()
 
         self.tab_actuel = 1
@@ -820,6 +828,7 @@ class MenuApplication(QMainWindow, Ui_Menu):
 
         self.CollerTexteV.textChanged.connect(self.entryCollerCliquee)
         self.NomTexteV.textChanged.connect(self.entryNomTexteCliquee)
+        self.BoutonAide.clicked.connect(self.ouvrirAide)
 
     def majTextesEx(self):
         with open("exemple1.txt", "r") as fichier:
@@ -831,6 +840,9 @@ class MenuApplication(QMainWindow, Ui_Menu):
         self.LabelTexteEx1R.setText(titre1.decode("utf-8"))
         self.LabelTexteEx2R.setText(titre2.decode("utf-8"))
         self.LabelTexteEx3R.setText(titre3.decode("utf-8"))
+
+    def ouvrirAide(self):
+        webbrowser.open("aide.pdf")
 
     def affFenetreBVN(self):
         self.FenetreBVN = FenetreBVNApplication()
@@ -845,6 +857,12 @@ class MenuApplication(QMainWindow, Ui_Menu):
                       self.SBoxSecondes.value())
         if temps == 0.0:
             temps = 60.0
+            self.SBoxMinutes.setValue(int(temps // 60))
+            self.SBoxSecondes.setValue(int(temps % 60))
+        elif temps <= 10.0:
+            temps = 10.0
+            self.SBoxMinutes.setValue(int(temps // 60))
+            self.SBoxSecondes.setValue(int(temps % 60))
 
         # Pour le texte
         if self.tab_actuel == 0:
@@ -884,7 +902,7 @@ class MenuApplication(QMainWindow, Ui_Menu):
                     fichier.close()
                 except:
                     nom = "texte.txt"
-                    self.NomTexteV.setText(texte.decode("utf-8"))
+                    self.NomTexteV.setText(nom.decode("utf-8"))
                 if platform.system() == "Linux" or platform.system() ==\
                    "Darwin":
                     if nom[0] != "/":
