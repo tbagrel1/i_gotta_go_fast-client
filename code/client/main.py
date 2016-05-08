@@ -859,6 +859,28 @@ class MenuApplication(QMainWindow, Ui_Menu):
         self.FenetreBVN.setWindowModality(Qt.ApplicationModal)
         self.FenetreBVN.show()
 
+    def normaliserTexte(self, texte):
+        texte = (re.sub(r"[\n\t\b\a\r]", r" ", texte)).strip()
+        texte = (re.sub(r" {2,}", r" ", texte.strip()))
+        if len(texte) > 4096:
+            texte = texte[:4096]
+        return texte
+
+    def cheat(self, texte):
+        mots = len(texte.split(" "))
+        car = len(texte.replace(" ", ""))
+        car_d = []
+        i = 0
+        while len(car_d) < 5 and i < len(texte) - 1:
+            c = texte[i]
+            if c in car_d:
+                pass
+            else:
+                car_d.append(c)
+            i += 1
+        nb_car_d = len(car_d)
+        return (mots < 5 or car < 10 or nb_car_d < 5)
+
     def getParam(self):
         # Pour le temps
         temps = float(self.SBoxMinutes.value() * 60 +
@@ -904,23 +926,21 @@ class MenuApplication(QMainWindow, Ui_Menu):
             if self.CollerTexteR.isChecked():
                 texte = unicode(self.CollerTexteV.toPlainText())\
                     .encode("utf-8").strip()
-                texte_mode = "perso::entier::{{{" + texte + "}}}"
+                if self.cheat(self.normaliserTexte(texte)):
+                    texte_mode = "expl::1"
+                else:
+                    texte_mode = "perso::entier::{{{" + texte + "}}}"
             elif self.NomTexteR.isChecked():
                 nom = unicode(self.NomTexteV.text()).encode("utf-8").strip()
                 try:
-                    fichier = open("txt/" + nom, "r")
-                    fichier.close()
+                    fichier_brut = open("txt/" + nom, "r")
+                    fichier = self.normaliserTexte(fichier_brut.read())
+                    fichier_brut.close()
+                    if self.cheat(fichier):
+                        raise TricheError
+                    texte_mode = "perso::nom::{{{" + nom + "}}}"
                 except:
-                    nom = "txt/texte.txt"
-                    self.NomTexteV.setText(nom.decode("utf-8"))
-                if platform.system() == "Linux" or platform.system() ==\
-                   "Darwin":
-                    if nom[0] != "/":
-                        nom = os.getcwd() + "/" + nom
-                elif platform.system() == "Windows":
-                    if nom[1:3] != ":\\":
-                        nom = os.getcwd() + "\\" + nom
-                texte_mode = "perso::nom::{{{" + nom + "}}}"
+                    texte_mode = "expl::1"
 
         self.param = [temps, texte_mode]
 
@@ -1053,5 +1073,3 @@ def main():
 if __name__ == "__main__":
     #.On appelle la fonction `main` définit plus haut
     main()
-
-###
