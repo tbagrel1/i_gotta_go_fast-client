@@ -1,0 +1,77 @@
+(lp0
+(dp1
+S'texte_mode_enh'
+p2
+S'Mots avec la syllabe -sser'
+p3
+sS'cpm'
+p4
+F330.1
+sS'mpm'
+p5
+F38.0
+sS'pseudo'
+p6
+S'Anonyme'
+p7
+sS'temps'
+p8
+I60
+sS'd_h'
+p9
+S'2016-05-08 10:58:47'
+p10
+sS'score'
+p11
+I2689
+sa(dp12
+S'texte_mode_enh'
+p13
+S'Mots avec la syllabe -sser'
+p14
+sS'cpm'
+p15
+F321.2
+sS'mpm'
+p16
+F36.8
+sS'pseudo'
+p17
+S'Anonyme'
+p18
+sS'temps'
+p19
+I60
+sS'd_h'
+p20
+S'2016-05-08 10:51:59'
+p21
+sS'score'
+p22
+I1911
+sa(dp23
+S'texte_mode_enh'
+p24
+S"Texte d'exemple 1"
+p25
+sS'cpm'
+p26
+F416.9
+sS'mpm'
+p27
+F91.2
+sS'pseudo'
+p28
+S'Anonyme'
+p29
+sS'temps'
+p30
+I5
+sS'd_h'
+p31
+S'2016-05-05 21:45:05'
+p32
+sS'score'
+p33
+I1889
+sa.
