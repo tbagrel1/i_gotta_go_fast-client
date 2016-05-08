@@ -34,17 +34,17 @@ def crypterScoreAttente(dico_score):
     checksum = hashlib.md5(open(sys.argv[0], "rb").read()).hexdigest()
     liste = [checksum, dico_score]
 
-    fichier_temp = open("../score/temp.tmp", "wb")
+    fichier_temp = open("score/temp.tmp", "wb")
     mon_pickler = pickle.Pickler(fichier_temp)
     mon_pickler.dump(liste)
     fichier_temp.close()
 
-    with open("../score/temp.tmp", "rb") as fichier_temp:
+    with open("score/temp.tmp", "rb") as fichier_temp:
         texte = fichier_temp.read()
-    os.remove("../score/temp.tmp")
+    os.remove("score/temp.tmp")
 
     texte_crypte = cle_fernet.encrypt(texte)
-    fichier_score_attente = open("../scores/en_attente.db", "a")
+    fichier_score_attente = open("score/en_attente.db", "a")
     fichier_score_attente.write(texte_crypte + "||||||||||")
     fichier_score_attente.close()
 

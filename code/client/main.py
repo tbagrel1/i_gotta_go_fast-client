@@ -13,8 +13,8 @@ from PyQt4.QtGui import *
 from _ui.ui_menu import Ui_Menu
 from _ui.ui_module import Ui_Module
 from _ui.ui_fenetrebvn import Ui_FenetreBVN
-from _utils import crypterScore
-from _utils import crypterTexte
+import crypterScore
+import crypterTexte
 
 #.Import des bibliothèques standards de `python`
 import sys
@@ -58,6 +58,13 @@ class FenetreBVNApplication(QMainWindow, Ui_FenetreBVN):
 
         self.BoutonContinuer.clicked.connect(self.continuer)
         self.BoutonQuitter.clicked.connect(self.quitter)
+
+    def keyPressEvent(self, event):
+        if type(event) == QKeyEvent:
+            if event.key() == Qt.Key_Escape:
+                self.quitter()
+            elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Space:
+                self.continuer()
 
     @pyqtSlot()
     def quitter(self):
@@ -276,6 +283,13 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.On active le focus sur la boîte de texte (comme ça l'utilisateur n'a 
         #.pas à cliquer dessus)
         self.EntryTapeCentre.setFocus()
+
+    def keyPressEvent(self, event):
+        if type(event) == QKeyEvent:
+            if event.key() == Qt.Key_Escape:
+                self.quitterM()
+            elif event.key() == Qt.Key_Return:
+                self.togglePauseM()
 
     def genererTexte(self):
         mtxt_s = self.mode_texte.split("::")
@@ -834,6 +848,15 @@ class MenuApplication(QMainWindow, Ui_Menu):
         self.CollerTexteV.textChanged.connect(self.entryCollerCliquee)
         self.NomTexteV.textChanged.connect(self.entryNomTexteCliquee)
         self.BoutonAide.clicked.connect(self.ouvrirAide)
+
+    def keyPressEvent(self, event):
+        if type(event) == QKeyEvent:
+            if event.key() == Qt.Key_Escape:
+                self.quitter()
+            elif event.key() == Qt.Key_Return:
+                self.commencer()
+            elif event.key() == Qt.Key_F1:
+                self.ouvrirAide()
 
     def majTextesEx(self):
         with open("txt/exemple1_e.txt", "r") as fichier:
