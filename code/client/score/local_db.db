@@ -2,14 +2,14 @@
 (dp1
 S'texte_mode_enh'
 p2
-S"Texte d'exemple 1"
+S'Les 100 mots les plus courants'
 p3
 sS'cpm'
 p4
-F562.7
+F463.6
 sS'mpm'
 p5
-F130.0
+F136.0
 sS'pseudo'
 p6
 S'admin'
@@ -19,22 +19,22 @@ p8
 I3
 sS'd_h'
 p9
-S'2016-05-09 19:01:34'
+S'2016-05-09 20:54:16'
 p10
 sS'score'
 p11
-I2883
+I2230
 sa(dp12
 S'texte_mode_enh'
 p13
-S"Texte d'exemple 2"
+S"Texte d'exemple 1"
 p14
 sS'cpm'
 p15
-F444.9
+F447.2
 sS'mpm'
 p16
-F64.5
+F104.5
 sS'pseudo'
 p17
 S'admin'
@@ -44,134 +44,9 @@ p19
 I3
 sS'd_h'
 p20
-S'2016-05-09 19:01:42'
+S'2016-05-09 20:54:08'
 p21
 sS'score'
 p22
-I1926
-sa(dp23
-S'texte_mode_enh'
-p24
-S'Les 100 mots les plus courants'
-p25
-sS'cpm'
-p26
-F443.9
-sS'mpm'
-p27
-F103.7
-sS'pseudo'
-p28
-S'admin'
-p29
-sS'temps'
-p30
-I3
-sS'd_h'
-p31
-S'2016-05-09 19:01:15'
-p32
-sS'score'
-p33
-I1564
-sa(dp34
-S'texte_mode_enh'
-p35
-S'Mots avec la syllabe -sser'
-p36
-sS'cpm'
-p37
-F453.3
-sS'mpm'
-p38
-F50.4
-sS'pseudo'
-p39
-S'admin'
-p40
-sS'temps'
-p41
-I3
-sS'd_h'
-p42
-S'2016-05-09 19:01:25'
-p43
-sS'score'
-p44
-I1551
-sa(dp45
-S'texte_mode_enh'
-p46
-S'Texte personnalis\xc3\xa9 : "texte.txt"'
-p47
-sS'cpm'
-p48
-F300.5
-sS'mpm'
-p49
-F67.0
-sS'pseudo'
-p50
-S'admin'
-p51
-sS'temps'
-p52
-I3
-sS'd_h'
-p53
-S'2016-05-09 19:02:22'
-p54
-sS'score'
-p55
-I1371
-sa(dp56
-S'texte_mode_enh'
-p57
-S'Texte personnalis\xc3\xa9 : #!/usr/bin...'
-p58
-sS'cpm'
-p59
-F266.7
-sS'mpm'
-p60
-F0.0
-sS'pseudo'
-p61
-S'admin'
-p62
-sS'temps'
-p63
-I3
-sS'd_h'
-p64
-S'2016-05-09 19:02:10'
-p65
-sS'score'
-p66
-I797
-sa(dp67
-S'texte_mode_enh'
-p68
-S"Texte d'exemple 3"
-p69
-sS'cpm'
-p70
-F242.7
-sS'mpm'
-p71
-F72.2
-sS'pseudo'
-p72
-S'admin'
-p73
-sS'temps'
-p74
-I3
-sS'd_h'
-p75
-S'2016-05-09 19:01:50'
-p76
-sS'score'
-p77
-I652
+I1762
 sa.

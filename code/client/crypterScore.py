@@ -8,6 +8,7 @@ import sys
 import pickle
 import os
 import hashlib
+import base64
 from Crypto.Cipher import AES
 
 def crypterScoreAttente(dico_score):
@@ -29,7 +30,7 @@ def crypterScoreAttente(dico_score):
 
     texte += "\0" * (16 - (len(texte) % 16))
 
-    texte_crypte = encodeur.encrypt(texte)
+    texte_crypte = base64.encodestring(encodeur.encrypt(texte))
     fichier_score_attente = open("score/en_attente.db", "a")
     fichier_score_attente.write(texte_crypte + "||||||||||")
     fichier_score_attente.close()
