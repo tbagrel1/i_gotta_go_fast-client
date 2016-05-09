@@ -4,46 +4,32 @@
 # Import des modules
 
 import socket
-import hashlib
 import sys
 import pickle
 import os
-import base64
-from cryptography.fernet import Fernet
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import hashlib
+from Crypto.Cipher import AES
 
 def crypterScoreAttente(dico_score):
 
-    # Tout ce qui est dans ce bloc correspond au cryptage symétrique
-    # On prépare la clé Fernet qui permet de crypter et de décrypter
-    #--------------------------------------------------------------------------
-    mot_de_passe = "1234123412341234"
-    cle_16o = "1234123412341234"
-
-    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(),
-                     length=32,
-                     salt=cle_16o,
-                     iterations=100000,
-                     backend=default_backend())
-    cle = base64.urlsafe_b64encode(kdf.derive(mot_de_passe))
-    cle_fernet = Fernet(cle)
-    #--------------------------------------------------------------------------
+    encodeur = AES.new('mot_de_passe_16o', AES.MODE_CBC, "vecteur_init_16o")
 
     checksum = hashlib.md5(open(sys.argv[0], "rb").read()).hexdigest()
     liste = [checksum, dico_score]
 
-    fichier_temp = open("score/temp.tmp", "wb")
+    fichier_temp = open("score/temp.tmp", "w")
     mon_pickler = pickle.Pickler(fichier_temp)
     mon_pickler.dump(liste)
     fichier_temp.close()
 
-    with open("score/temp.tmp", "rb") as fichier_temp:
-        texte = fichier_temp.read()
+    fichier_temp = open("score/temp.tmp", "r")
+    texte = fichier_temp.read()
+    fichier_temp.close()
     os.remove("score/temp.tmp")
 
-    texte_crypte = cle_fernet.encrypt(texte)
+    texte += "\0" * (16 - (len(texte) % 16))
+
+    texte_crypte = encodeur.encrypt(texte)
     fichier_score_attente = open("score/en_attente.db", "a")
     fichier_score_attente.write(texte_crypte + "||||||||||")
     fichier_score_attente.close()

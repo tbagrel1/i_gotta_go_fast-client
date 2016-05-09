@@ -905,6 +905,7 @@ class MenuApplication(QMainWindow, Ui_Menu):
         return (mots < 5 or car < 10 or nb_car_d < 5)
 
     def getParam(self):
+        self.getPseudo()
         # Pour le temps
         temps = float(self.SBoxMinutes.value() * 60 +
                       self.SBoxSecondes.value())
@@ -912,7 +913,7 @@ class MenuApplication(QMainWindow, Ui_Menu):
             temps = 60.0
             self.SBoxMinutes.setValue(int(temps // 60))
             self.SBoxSecondes.setValue(int(temps % 60))
-        elif temps <= 10.0:
+        elif temps <= 10.0 and self.pseudo.lower() != "admin":
             temps = 10.0
             self.SBoxMinutes.setValue(int(temps // 60))
             self.SBoxSecondes.setValue(int(temps % 60))

@@ -1,6 +1,6 @@
 import pickle
 
-fichier_db = open("../score/local_db.db", "rb")
+fichier_db = open("../score/local_db.db", "r")
 mon_pickler = pickle.Unpickler(fichier_db)
 liste = mon_pickler.load()
 print(type(liste))
