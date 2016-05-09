@@ -10,7 +10,7 @@ while a != "\exit":
         a = raw_input("Nom du texte\n>>> ")
         f_in = open("../_sources_txt/" + a, "r")
         f_out = open("../txt/" + a.split(".")[0] + "_e." + a.split(".")[1],
-                     "w")
+                     "wb")
         t_in = f_in.read()
         encodeur = AES.new('mot_de_passe_16o', AES.MODE_CBC,
                            "vecteur_init_16o")
@@ -23,7 +23,7 @@ while a != "\exit":
 
     if m == "d":
         a = raw_input("Nom du texte\n>>> ")
-        f_in = open("../txt/" + a, "r")
+        f_in = open("../txt/" + a, "rb")
         t_in = f_in.read()
         decodeur = AES.new('mot_de_passe_16o', AES.MODE_CBC,
                            "vecteur_init_16o")
