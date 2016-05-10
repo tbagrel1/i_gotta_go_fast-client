@@ -6,136 +6,163 @@
 #.des informations sur les scores
 import socket
 #.Import du modules pickle qui permet de recuperer un objet python stocké sous
-#.forme de texte adapté
+#.forme de texte spécial
 import pickle
-#.Import des modules pour la cryptographie
-import base64
 import os
-from cryptography.fernet import Fernet
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-#.Ici sont stocké les sommes de notre progamme client et elle servent a savoir
-#.si l'envoyeur est bien notre client
-som_ref = (...,...,...)
-# .##Format de données reçues par le serveur
-#.On reçoit du client plusieurs chaînes de caractères correspondant à une
-#.liste contenant le code de la fonction de cryptage, la checksum du fichier
-#.qui appelle la fonction ainsi que le dictionnaire de score, le tout crypté
+import base64
+from Crypto.Cipher import AES
+import MySQLdb
 
-# .##Les fonctions :
-#.On recupere une ligne "pickle" correspondant au score, la
-#.fonctions permet de rendre lisible les données que l'on
-#.recupere sous forme texte et les passer sous forme python
+#.Définition des fonctions
 
-def unpick(msg):
-    doc_pick = open("pickle.txt", "wb")
-    doc_pick.write(msg)
-    doc_pick.close()
-    #.On test si les données n'ont pas été modifier, et qu'elle sont lisible
-    #.afin de les exploité
+def debase64(score):
     try:
-        a = pickle.load(open("pickle.txt", "rb"))
-        doc_pick.close()
-        #.On verifie si le checksum est dans la la liste de réference, nous 
-        #.informant que c'est bien notre programme qui a envoyer les données
-        if a[0] in som_ref:
-            a = a[1]
-            #.Si oui, alors on le met dans notre database
-            putdata(a)
-    #.Si les données ont été modifier, alors nous ne les regardons même pas 
-    #.au cas ou il y aurais un code malfaisant
+        score = base64.decodestring(score)
+        valid = "OK"
     except:
+        score = ""
+        valid = "Erreur : Base64 Decode"
+    return (valid, score)
+
+def decrypt(score):
+    try:
+        decodeur = AES.new('mot_de_passe_16o', AES.MODE_CBC,
+                           "vecteur_init_16o")
+        score = decodeur.decrypt(score)
+        while score[-1] == "\0":
+            score = score[:-1]
+        valid = "OK"
+    except:
+        score = ""
+        valid = "Erreur : Decrypt AES"
+    return (valid, score)
+
+def depickle(score):
+    try:
+        doc_pick = open("temp.tmp", "wb")
+        doc_pick.write(score)
         doc_pick.close()
+        doc_pick = open("temp.tmp", "rb")
+        mon_pickler = pickle.Unpickler(doc_pick)
+        score = mon_pickler.load()
+        doc_pick.close()
+        os.remove("temp.tmp")
+        valid = "OK"
+    except:
+        score = ""
+        valid = "Erreur : Depickler"
+    return (valid, score)
 
-def putdata(score):
-    print(score)
-#.Tout ce qui est dans ce bloc correspond au cryptage symétrique
-#.On prépare la clé Fernet qui permet de crypter et de décrypter
-#------------------------------------------------------------------------------
-mot_de_passe = "                "
-# cle_16o = os.urandom(16) --> Il faut que les deux parties utilisent la même
-cle_16o = "                "
+def dechecksum(score):
+    if score[0] in liste_checksum:
+        score = score[1]
+        valid = "OK"
+    else:
+        score = ""
+        valid = "Erreur : Checksum"
+    return (valid, score)
 
-kdf = PBKDF2HMAC(algorithm=hashes.SHA256(),
-                 length=32,
-                 salt=cle_16o,
-                 iterations=100000,
-                 backend=default_backend())
-cle = base64.urlsafe_b64encode(kdf.derive(mot_de_passe))
-cle_fernet = Fernet(cle)
-#------------------------------------------------------------------------------
+def addDB(score):
+    global DB
+    DB_cur_score = DB.cursor()
+    req = """INSERT INTO IGGF_V1 VALUES (id=NULL, pseudo=\"{}\", score={},
+             cpm={}, mpm={}, temps={}, d_h=\"{}\", texte_mode=\"{}\",
+             texte_t=\"{}\", texte_mode_enh=\"{}\");"""\
+                .format(score["pseudo"],
+                        score["score"],
+                        score["cpm"],
+                        score["mpm"],
+                        score["temps"],
+                        score["d_h"],
+                        score["texte_mode"],
+                        score["texte_t"],
+                        score["texte_mode_enh"])
+    print(req)
+    try:
+        DB_cur_score.execute(req)
+        DB.commit()
+        valid = "OK"
+    except:
+        DB.rollback()
+        valid = "Erreur : Ajout DB"
+    return valid
 
-#.On lance le service de connection
+#.#Corps du programme
+
+#.On récupère les checksums autorisées pour l'envoi des scores
+fichier_checksum = open("checksum/checksum.db", "rb")
+mon_pickler = pickle.Unpickler(fichier_checksum)
+liste_checksum = mon_pickler.load()
+fichier_checksum.close()
+print(liste_checksum)
+
+#.Connection à la base de données
+DB = MySQLdb.connect(host="localhost", user="root", passwd="pipc54", db="IGGF")
+
+#.On lance la connection réseau
 serv_co = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #.On utilise le port `25565`
 serv_co.bind(('', 25565))
-#. On écoute un maximum d'une connection à la fois
+#.On écoute un maximum d'une connection à la fois
 serv_co.listen(1)
 
 #.Tant que le serveur est en marche
 while True:
     #.On accepte une connection et on récupère les informations de connection
     (serv_to_client, infos_co) = serv_co.accept()
-    #.On affiche les informations de connection pour verifier qu'il n'y pas 
-    #.de probleme avec celle-ci
     print(infos_co)
     #.On envoi un message au client pour dire qu'il est bien connecté
     serv_to_client.send("OK\end")
-    #.On recoit la commande push ou pull du client, on utilise la boucle while, 
-    #.si la demande est trop longue (en cas de test d'attaque de la base de 
-    #.donnée)
+    #.On reçoit les scores envoyés par le client
     msg_recu = ""
     while msg_recu[-4:] != "\end":
         msg_recu += serv_to_client.recv(1024)
     msg_recu = msg_recu[:-4]
     print(msg_recu)
-    #.On regarde ce que veut demander le client au serveur entre 
-    #.push et pull, ici push
-    if msg_recu == "PUSH":
-        #.On previent que le mode push est bien actif, et qu'il peut envoyer 
-        #.les données.
-        serv_to_client.send("OK\end")
-        #.On recoit le score du client, comme on ne peut recevoir que 1024 
-        #.carractère a la fois, on ajoute chaque 1024 carractère les un apres 
-        #.les autres
-        msg_recu = ""
-        while msg_recu[-4:] != "\end":
-            msg_recu += serv_to_client.recv(1024)
-        msg_recu = msg_recu[:-4]
-        print(msg_recu)
-        #.On envoi un message au client pour dire que le score est bien arrivé
-        serv_to_client.send("OK\end")
-        serv_to_client.close()
-        #.On met ce que l'on recoit dans on document en l'ecriant sur une seul 
-        #.ligne, plus facile pour les interpréters après
-        fichier = open("message_crypte.txt", "wb")
-        fichier.write(msg_recu)
-        fichier.close()
-        #.On recupère la ligne en la decriptant 
-        fichier = open("message_crypte.txt", "rb")
-        msg_crypte = fichier.read()
-        fichier.close()
-        msg_decrypte = cle_fernet.decrypt(msg_crypte)
-        #.Une fois le message decrypté on utilise la fonction unpick qui 
-        #.transforme un chaine de carractere (si elle a été pickle avant) 
-        #.sous forme de code python, tres pratique pour envoyer des partie de 
-        #.code, ici en l'occurence on envoi les scores sous forme de dictionaire
-        #.avec en plus deux clé permetant de verifier la provenance des données
-        unpick(msg_decrypte)
-        #.On envoi OK avec \end a la fin pour signaler au client quand l'envoi 
-        #.est fini
-        serv_to_client.send("OK\end")
 
-    #.On regarde ce que veut demander le client au serveur entre 
-    #.push et pull, ici pull
-    elif msg_recu == "PULL":
-        #.On previent que le mode pul est bien actif, et qu'il peut se preparer 
-        #.a recevoir les données de la database.
-        serv_to_client.send("OK\end")
-        #.On envoi la database au client avec un \end a la fin pour lui signaler 
-        #.quand l'envoi est fini
-        serv_to_client.send("database" + "\end")
-    #.On ferme la connection avec le client afin de laisser la place a un futur 
-    #.client qui voudrais se conecter
+    cs_plus_scores_crypt = [elt for elt in msg_recu.split("||||||||||") if 
+                            elt and elt != "\n"]
+
+    code_retour = []
+
+    for score in cs_plus_scores_crypt:
+        valid = "OK"
+        if valid == "OK":
+            (valid, score) = debase64(score)
+        if valid == "OK":
+            (valid, score) = decrypt(score)
+        if valid == "OK":
+            (valid, score) = depickle(score)
+        if valid == "OK":
+            (valid, score) = dechecksum(score)
+        if valid == "OK":
+            valid = addDB(score)
+
+    code_retour.append(valid)
+
+    print(code_retour)
+
+    DB_cur_getDB = DB.cursor()
+    req = "SELECT * FROM IGGF_1 ORDER BY score DESC;"
+    try:
+        DB_cur_getDB.execute(req)
+        tab = DB_cur_getDB.fetchall()
+        db = []
+        for ligne in tab:
+            dico_score_simpl = {"pseudo": ligne[1],
+                                "score": ligne[2],
+                                "cpm": ligne[3],
+                                "mpm": ligne[4],
+                                "temps": ligne[5],
+                                "d_h": ligne[6],
+                                "texte_mode_enh": ligne[9]}
+            db.append(dico_score_simpl)
+    except:
+        db = ""
+    #Pickle
+    serv_to_client.send((code_retour, db))
+
+    #.On ferme la connection
     serv_to_client.close()
+
+DB.close()
