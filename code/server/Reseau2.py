@@ -4,6 +4,7 @@
 import pickle
 import os
 import base64
+import socket
 from Crypto.Cipher import AES
 import MySQLdb
 
