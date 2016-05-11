@@ -97,7 +97,7 @@ DB = MySQLdb.connect(host="localhost", user="root", passwd="pipc54", db="IGGF")
 #.On lance la connection réseau
 serv_co = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #.On utilise le port `25565`
-serv_co.bind(('localhost', 25565))
+serv_co.bind(('', 25565))
 #.On écoute un maximum d'une connection à la fois
 serv_co.listen(1)
 
