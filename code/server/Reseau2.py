@@ -117,16 +117,17 @@ while True:
     msg_recu = msg_recu[:-4]
     print(msg_recu)
     print("Traitement des nouveaux scores...")
+
+    code_retour = []
+
     #.Si des nouveaux scores ont été envoyés
-    if msg_recu and msg_recu != "\n": 
+    if msg_recu and msg_recu != "\n":
         print("Nouveaux scores -> Traitement")
 
         #.On sépare les différents scores
         cs_plus_scores_crypt = [elt for elt in msg_recu.split("||||||||||") if 
                                 elt and elt != "\n"]
         print(cs_plus_scores_crypt)
-
-        code_retour = []
 
         #.Pour chaque score, on le fait passer par les différentes étapes 
         #.et on récupère le code d'erreur que l'on place dans `code_retour`
