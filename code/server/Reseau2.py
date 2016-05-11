@@ -111,8 +111,10 @@ while True:
     #.On accepte une connection et on récupère les informations de connection
     (serv_to_client, infos_co) = serv_co.accept()
     print(infos_co)
-    #.On envoi un message au client pour dire qu'il est bien connecté
-    serv_to_client.send("OK\end")
+    serv_to_client.close()
+
+    (serv_to_client, infos_co) = serv_co.accept()
+    print(infos_co)
     #.On reçoit les scores envoyés par le client
     msg_recu = ""
     while msg_recu[-4:] != "\end":
@@ -120,25 +122,27 @@ while True:
     msg_recu = msg_recu[:-4]
     print(msg_recu)
 
-    cs_plus_scores_crypt = [elt for elt in msg_recu.split("||||||||||") if 
-                            elt and elt != "\n"]
-
     code_retour = []
 
-    for score in cs_plus_scores_crypt:
-        valid = "OK"
-        if valid == "OK":
-            (valid, score) = debase64(score)
-        if valid == "OK":
-            (valid, score) = decrypt(score)
-        if valid == "OK":
-            (valid, score) = depickle(score)
-        if valid == "OK":
-            (valid, score) = dechecksum(score)
-        if valid == "OK":
-            valid = addDB(score)
+    if msg_recu and msg_recu != "\n": 
 
-    code_retour.append(valid)
+        cs_plus_scores_crypt = [elt for elt in msg_recu.split("||||||||||") if 
+                                elt and elt != "\n"]
+
+        for score in cs_plus_scores_crypt:
+            valid = "OK"
+            if valid == "OK":
+                (valid, score) = debase64(score)
+            if valid == "OK":
+                (valid, score) = decrypt(score)
+            if valid == "OK":
+                (valid, score) = depickle(score)
+            if valid == "OK":
+                (valid, score) = dechecksum(score)
+            if valid == "OK":
+                valid = addDB(score)
+
+        code_retour.append(valid)
 
     print(code_retour)
 
@@ -159,9 +163,16 @@ while True:
             db.append(dico_score_simpl)
     except:
         db = ""
-    #Pickle
-    serv_to_client.send((code_retour, db))
+    retour = (code_retour, db)
 
+    fichier_temp = open("temp.tmp", "wb")
+    mon_pickler = pickle.Pickler(fichier_temp)
+    mon_pickler.dump(retour)
+    fichier_temp.close()
+    fichier_temp = open("temp.tmp", "rb")
+    retour = base64.encodestring(fichier_temp.read())
+    fichier_temp.close()
+    serv_to_client.send(retour + "\end")
     #.On ferme la connection
     serv_to_client.close()
 

@@ -36,63 +36,23 @@ def crypterScoreAttente(dico_score):
     fichier_score_attente.close()
 
 def envoyerScoreAttente():
-    pass
-#     client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#     client_to_serv.connect(("localhost", 25565))
+    try:
+        client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_to_serv.connect(("bagrel.ddns.net", 25565))
+        co_ok = True
+    except:
+        co_ok = False
+    if not co_ok:
+        try:
+            client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_to_serv.connect(("pi-pc", 25565))
+            co_ok = True
+        except:
+            co_ok = False
+    if co_ok:
+        fichier_score = open("score/en_attente.db", "r")
+        scores_a_envoyer = fichier_score.read()
+        print(scores_a_envoyer)
+        fichier_score.close()
 
-#     msg_recu = ""
-#     while msg_recu[-4:] != "\end":
-#         msg_recu += client_to_serv.recv(1024)
-#     msg_recu = msg_recu[:-4]
-#     print(msg_recu)
-
-#     if msg_recu == "OK":
-#         client_to_serv.send("PUSH\end")
-
-#         msg_recu = ""
-#         while msg_recu[-4:] != "\end":
-#             msg_recu += client_to_serv.recv(1024)
-#         msg_recu = msg_recu[:-4]
-#         print(msg_recu)
-#         if msg_recu == "OK":
-
-#             # On envoie le score
-#             client_to_serv.send(score + "\end")
-
-#             msg_recu = ""
-#             while msg_recu[-4:] != "\end":
-#                 msg_recu += client_to_serv.recv(1024)
-#             msg_recu = msg_recu[:-4]
-#             print(msg_recu)
-
-#             if msg_recu == "OK":
-#                 return True
-
-def recupererScore():
-    pass
-#     client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#     client_to_serv.connect(("localhost", 25565))
-
-#     msg_recu = ""
-#     while msg_recu[-4:] != "\end":
-#         msg_recu += client_to_serv.recv(1024)
-#     msg_recu = msg_recu[:-4]
-#     print(msg_recu)
-
-#     if msg_recu == "OK":
-#         client_to_serv.send("PULL\end")
-
-#         msg_recu = ""
-#         while msg_recu[-4:] != "\end":
-#             msg_recu += client_to_serv.recv(1024)
-#         msg_recu = msg_recu[:-4]
-#         print(msg_recu)
-#         if msg_recu == "OK":
-
-#             msg_recu = ""
-#             while msg_recu[-4:] != "\end":
-#                 msg_recu += client_to_serv.recv(1024)
-#             msg_recu = msg_recu[:-4]
-#             print(msg_recu)
-
-#             # msg_recu correspond à la DB récupérée
+envoyerScoreAttente()
