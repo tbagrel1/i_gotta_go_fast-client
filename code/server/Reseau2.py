@@ -111,10 +111,6 @@ while True:
     #.On accepte une connection et on récupère les informations de connection
     (serv_to_client, infos_co) = serv_co.accept()
     print(infos_co)
-    serv_to_client.close()
-
-    (serv_to_client, infos_co) = serv_co.accept()
-    print(infos_co)
     #.On reçoit les scores envoyés par le client
     msg_recu = ""
     while msg_recu[-4:] != "\end":
