@@ -64,7 +64,8 @@ def envoyerScoreAttente():
         print("Envoi des scores...")
         if scores_a_envoyer and scores_a_envoyer != "\n":
             print("Il y a des nouveaux scores -> on les envoie")
-            client_to_serv.send(scores_a_envoyer + "\end")
+            scores_a_envoyer += "\end"
+            client_to_serv.send(scores_a_envoyer)
         else:
             print("Pas de nouveaux scores, on envoie une chaîne vide")
             client_to_serv.send("\end")
@@ -73,6 +74,7 @@ def envoyerScoreAttente():
         #.Le serveur va ajouter les scores dans la DB et renvoyer un tuple 
         #.contenant les codes d'erreurs ainsi que la nouvelle DB mise à jour
         msg_recu = ""
+        msg_recu += client_to_serv.recv(1024)
         while msg_recu[-4:] != "\end":
             msg_recu += client_to_serv.recv(1024)
         msg_recu = msg_recu[:-4]

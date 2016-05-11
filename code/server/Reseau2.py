@@ -110,6 +110,7 @@ while True:
     #.On reçoit les scores envoyés par le client
     print("Récupération des scores...")
     msg_recu = ""
+    msg_recu += serv_to_client.recv(1024)
     while msg_recu[-4:] != "\end":
         print(msg_recu)
         msg_recu += serv_to_client.recv(1024)
@@ -192,6 +193,7 @@ while True:
     #.On attend ensuite la confirmation du client pour dire que le traitement 
     #.a bien été effectué
     msg_recu = ""
+    msg_recu += serv_to_client.recv(1024)
     while msg_recu[-4:] != "\end":
         msg_recu += serv_to_client.recv(1024)
     msg_recu = msg_recu[:-4]
