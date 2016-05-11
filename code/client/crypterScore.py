@@ -10,6 +10,31 @@ import os
 import hashlib
 import base64
 from Crypto.Cipher import AES
+from multiprocessing import Process, Pipe
+
+class TimeoutProcess():
+    def __init__(self, fonction, timeout):
+        self.fonction = fonction
+        self.timeout = timeout
+
+    def __call__(self, *args, **kwargs):
+        def process_exec_nt(pipe, fonction, args, kwargs):
+            valeur_retournee = fonction(*args, **kwargs)
+            pipe.send(valeur_retournee)
+
+        pipe_parent, pipe_enfant = Pipe()
+        process_exec_t = Process(target=process_exec_nt, args=(pipe_enfant,
+                                                               self.fonction,
+                                                               args,
+                                                               kwargs))
+        process_exec_t.start()
+        process_exec_t.join(self.timeout)
+
+        if process_exec_t.is_alive():
+            process_exec_t.terminate()
+            return None
+        else:
+            return pipe_parent.recv()
 
 def crypterScoreAttente(dico_score):
 
@@ -35,25 +60,27 @@ def crypterScoreAttente(dico_score):
     fichier_score_attente.write(texte_crypte + "||||||||||")
     fichier_score_attente.close()
 
-def envoyerScoreAttente():
-    #.On essaye de se connecter sur la première adresse : `bagrel.ddns.net`
+def connection(adresse, port):
     try:
         client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_to_serv.connect(("bagrel.ddns.net", 25565))
-        co_ok = True
+        client_to_serv.connect((adresse, port))
+        print("Réussi {}".format(adresse))
+        client_to_serv.send("TEST\end")
+        return adresse, port
     except:
-        co_ok = False
-    #.Si ça ne marche pas, on essaye la seconde adresse : `pi-pc`
-    if not co_ok:
-        try:
-            client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client_to_serv.connect(("pi-pc", 25565))
-            co_ok = True
-        except:
-            co_ok = False
-    print(co_ok)
+        print("Raté {}".format(adresse))
+        return None
+
+def envoyerScoreAttente():
+
+    adresse_port = TimeoutProcess(connection, 0.5)("pi-pc", 25565)
+    if not adresse_port:
+        adresse_port = TimeoutProcess(connection, 1)("bagrel.ddns.net", 25565)
     #.Si l'on a réussi à se connecter à l'une des adresses
-    if co_ok:
+    if adresse_port:
+        client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_to_serv.connect((adresse_port[0], adresse_port[1]))
+        client_to_serv.send("OTHER\end")
         #.On ouvre le fichier de scores cryptés en attente
         fichier_score = open("score/en_attente.db", "r")
         scores_a_envoyer = fichier_score.read()
