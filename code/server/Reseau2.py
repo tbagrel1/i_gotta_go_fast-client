@@ -175,7 +175,13 @@ while True:
     retour = base64.encodestring(fichier_temp.read())
     fichier_temp.close()
     serv_to_client.send(retour + "\end")
-    #.On ferme la connection
+
+    msg_recu = ""
+    while msg_recu[-4:] != "\end":
+        msg_recu += serv_to_client.recv(1024)
+    msg_recu = msg_recu[:-4]
+    print(msg_recu)
+
     serv_to_client.close()
 
 DB.close()

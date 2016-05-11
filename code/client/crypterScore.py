@@ -79,5 +79,6 @@ def envoyerScoreAttente():
         db = retour[1]
         print(code_retour)
         print(db)
+        client_to_serv.send("OK\end")
 
 envoyerScoreAttente()
