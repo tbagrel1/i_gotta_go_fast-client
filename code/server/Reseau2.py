@@ -188,7 +188,8 @@ while True:
 
     print("Envoi de la DB et des codes retour au client...")
     #.Et on envoie au client les codes de retours et la nouvelle DB
-    serv_to_client.send(retour + "\end")
+    retour = retour + "\end"
+    serv_to_client.send(retour)
 
     print("En attente de la confirmation de bonne réception par le client...")
     #.On attend ensuite la confirmation du client pour dire que le traitement 
