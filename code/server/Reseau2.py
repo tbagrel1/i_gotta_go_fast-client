@@ -111,6 +111,7 @@ while True:
     print("Récupération des scores...")
     msg_recu = ""
     while msg_recu[-4:] != "\end":
+        print(msg_recu)
         msg_recu += serv_to_client.recv(1024)
     msg_recu = msg_recu[:-4]
     print(msg_recu)
