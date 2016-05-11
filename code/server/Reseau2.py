@@ -1,12 +1,6 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*
 
-# .##Modules :
-#.Import du module socket afin de communiquer avec le client qui lui envera
-#.des informations sur les scores
-import socket
-#.Import du modules pickle qui permet de recuperer un objet python stocké sous
-#.forme de texte spécial
 import pickle
 import os
 import base64
@@ -118,14 +112,18 @@ while True:
     msg_recu = msg_recu[:-4]
     print(msg_recu)
 
-    code_retour = []
-
+    #.Si des nouveaux scores ont été envoyés
     if msg_recu and msg_recu != "\n": 
 
+        #.On sépare les différents scores
         cs_plus_scores_crypt = [elt for elt in msg_recu.split("||||||||||") if 
                                 elt and elt != "\n"]
         print(cs_plus_scores_crypt)
 
+        code_retour = []
+
+        #.Pour chaque score, on le fait passer par les différentes étapes 
+        #.et on récupère le code d'erreur que l'on place dans `code_retour`
         for score in cs_plus_scores_crypt:
             print(score)
             valid = "OK"
@@ -144,6 +142,7 @@ while True:
 
     print(code_retour)
 
+    #.Ensuite, on récupère la nouvelle DB mise à jour
     DB_cur_getDB = DB.cursor()
     req = "SELECT * FROM IGGF_1 ORDER BY score DESC;"
     try:
@@ -161,6 +160,8 @@ while True:
             db.append(dico_score_simpl)
     except:
         db = ""
+
+    #.On prépare les codes de retour et la DB pour l'envoi...
     retour = (code_retour, db)
 
     fichier_temp = open("temp.tmp", "wb")
@@ -170,14 +171,20 @@ while True:
     fichier_temp = open("temp.tmp", "rb")
     retour = base64.encodestring(fichier_temp.read())
     fichier_temp.close()
+
+    #.Et on envoie au client les codes de retours et la nouvelle DB
     serv_to_client.send(retour + "\end")
 
+    #.On attend ensuite la confirmation du client pour dire que le traitement 
+    #.a bien été effectué
     msg_recu = ""
     while msg_recu[-4:] != "\end":
         msg_recu += serv_to_client.recv(1024)
     msg_recu = msg_recu[:-4]
     print(msg_recu)
 
+    #.Enfin, on ferme la connection avec le client
     serv_to_client.close()
 
+#.On ferme la DB
 DB.close()

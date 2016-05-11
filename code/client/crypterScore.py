@@ -36,13 +36,14 @@ def crypterScoreAttente(dico_score):
     fichier_score_attente.close()
 
 def envoyerScoreAttente():
+    #.On essaye de se connecter sur la première adresse : `bagrel.ddns.net`
     try:
         client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_to_serv.connect(("bagrel.ddns.net", 25565))
         co_ok = True
     except:
         co_ok = False
-    print(co_ok)
+    #.Si ça ne marche pas, on essaye la seconde adresse : `pi-pc`
     if not co_ok:
         try:
             client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,22 +51,29 @@ def envoyerScoreAttente():
             co_ok = True
         except:
             co_ok = False
-    print(co_ok)
+    #.Si l'on a réussi à se connecter à l'une des adresses
     if co_ok:
+        #.On ouvre le fichier de scores cryptés en attente
         fichier_score = open("score/en_attente.db", "r")
         scores_a_envoyer = fichier_score.read()
         print(scores_a_envoyer)
         fichier_score.close()
+        #.Si il y a des scores en attente, on les envoie, sinon on envoie une
+        #.chaîne vide
         if scores_a_envoyer and scores_a_envoyer != "\n":
             client_to_serv.send(scores_a_envoyer + "\end")
         else:
             client_to_serv.send("\end")
 
+        #.Le serveur va ajouter les scores dans la DB et renvoyer un tuple 
+        #.contenant les codes d'erreurs ainsi que la nouvelle DB mise à jour
         msg_recu = ""
         while msg_recu[-4:] != "\end":
             msg_recu += client_to_serv.recv(1024)
         msg_recu = msg_recu[:-4]
         print(msg_recu)
+        #.On décode et dépickle le message reçu et on récupère les codes de 
+        #.retour et la nouvelle DB
         retour = base64.decodestring(msg_recu)
         fichier_temp = open("temp.tmp", "wb")
         fichier_temp.write(retour)
@@ -79,6 +87,69 @@ def envoyerScoreAttente():
         db = retour[1]
         print(code_retour)
         print(db)
+
+        #.Si des scores nouveaux ont été envoyés, on a besoin de s'occuper des 
+        #.codes d'erreurs
+        if scores_a_envoyer and scores_a_envoyer != "\n":
+            erreurs = []
+            #.Pour chaque code d'erreur qui ne vaut pas `"OK"`
+            for i in range(len(code_retour)):
+                if code_retour[i] != "OK":
+                    #.On ajoute le score correspondant à la liste des scores
+                    #.qui contiennent les erreurs
+                    erreurs.append(scores_a_envoyer[i])
+            #.Si il y a eu des erreurs
+            if erreurs:
+                #.On sépare les différents scores qui ont été envoyés
+                scores_a_envoyer = [elt for elt in
+                                    scores_a_envoyer.split("||||||||||") if 
+                                    elt and elt != "\n"]
+                #.On essaye d'ouvrir le fichier des erreurs, et on récupère 
+                #.les erreurs déjà inscrites, pour ne pas écrire plusieurs 
+                #.fois les mêmes
+                try:
+                    fichier_erreur = open("score/erreur.db", "r")
+                    erreurs_prec = [elt for elt in 
+                                    fichier_erreur.read().split("||||||||||")
+                                    if elt and elt != "\n"]
+                    fichier_erreur.close()
+                #.Si le fichier n'existe pas, on définit qu'il n'y a pas 
+                #.encore d'erreurs enregistrées
+                except:
+                    erreurs_prec = []
+                #.Pour chaque nouvelle erreur
+                for erreur in erreurs:
+                    #.Si elle n'est pas dans la liste des erreurs déjà 
+                    #.enregistrées, on l'ajoute
+                    if erreur in erreurs_prec:
+                        pass
+                    else:
+                        erreurs_prec.append(erreur)
+                #.On ouvre ensuite le fichier d'erreur en écriture et on écrit 
+                #.la liste des erreurs
+                fichier_erreur = open("score/erreur.db", "w")
+                erreurs_prec = "||||||||||".join(erreurs_prec)
+                if erreurs:
+                    erreurs += "||||||||||"
+                fichier_erreur.write(erreurs_prec)
+                fichier_erreur.close()
+
+        #.Si il n'y a pas eu d'erreur et qu'une nouvelle DB a bien été envoyée
+        if db and db != "\n":
+            #.On écrit la nouvelle DB à la place de l'ancienne
+            fichier_db = open("score/local_db.db", "wb")
+            mon_pickler = pickle.Pickler(fichier_db)
+            mon_pickler.dump(db)
+            fichier_db.close()
+
+        #.Enfin, on supprime les scores en attente puisqu'ils ont été soit 
+        #.envoyés, validés et ajoutés à la DB soit placés dans le fichier 
+        #.d'erreur pour pouvoir les récupérer en cas d'erreur non justifiée
+        fichier_score = open("score/en_attente.db", "w")
+        fichier_score.write("")
+        fichier_score.close()
+
+        #.On valide pour dire au serveur qu'on peut se déconnecter
         client_to_serv.send("OK\end")
 
 envoyerScoreAttente()
