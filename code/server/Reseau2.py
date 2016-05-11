@@ -128,8 +128,10 @@ while True:
 
         cs_plus_scores_crypt = [elt for elt in msg_recu.split("||||||||||") if 
                                 elt and elt != "\n"]
+        print(cs_plus_scores_crypt)
 
         for score in cs_plus_scores_crypt:
+            print(score)
             valid = "OK"
             if valid == "OK":
                 (valid, score) = debase64(score)
