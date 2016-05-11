@@ -54,5 +54,15 @@ def envoyerScoreAttente():
         scores_a_envoyer = fichier_score.read()
         print(scores_a_envoyer)
         fichier_score.close()
+        if scores_a_envoyer and scores_a_envoyer != "\n":
+            client_to_serv.send(scores_a_envoyer)
+        else:
+            client_to_serv.send("")
+
+        msg_recu = ""
+        while msg_recu[-4:] != "\end":
+            msg_recu += client_to_serv.recv(1024)
+        msg_recu = msg_recu[:-4]
+        print(msg_recu)
 
 envoyerScoreAttente()
