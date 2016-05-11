@@ -51,6 +51,7 @@ def envoyerScoreAttente():
             co_ok = True
         except:
             co_ok = False
+    print(co_ok)
     #.Si l'on a réussi à se connecter à l'une des adresses
     if co_ok:
         #.On ouvre le fichier de scores cryptés en attente
@@ -60,11 +61,15 @@ def envoyerScoreAttente():
         fichier_score.close()
         #.Si il y a des scores en attente, on les envoie, sinon on envoie une
         #.chaîne vide
+        print("Envoi des scores...")
         if scores_a_envoyer and scores_a_envoyer != "\n":
+            print("Il y a des nouveaux scores -> on les envoie")
             client_to_serv.send(scores_a_envoyer + "\end")
         else:
+            print("Pas de nouveaux scores, on envoie une chaîne vide")
             client_to_serv.send("\end")
 
+        print("Réception de la DB...")
         #.Le serveur va ajouter les scores dans la DB et renvoyer un tuple 
         #.contenant les codes d'erreurs ainsi que la nouvelle DB mise à jour
         msg_recu = ""
@@ -74,6 +79,7 @@ def envoyerScoreAttente():
         print(msg_recu)
         #.On décode et dépickle le message reçu et on récupère les codes de 
         #.retour et la nouvelle DB
+        print("Decodage de la DB...")
         retour = base64.decodestring(msg_recu)
         fichier_temp = open("temp.tmp", "wb")
         fichier_temp.write(retour)
@@ -90,7 +96,9 @@ def envoyerScoreAttente():
 
         #.Si des scores nouveaux ont été envoyés, on a besoin de s'occuper des 
         #.codes d'erreurs
+        print("Gestion des codes d'erreurs")
         if scores_a_envoyer and scores_a_envoyer != "\n":
+            print("Nouveaux scores -> Erreurs ?")
             erreurs = []
             #.Pour chaque code d'erreur qui ne vaut pas `"OK"`
             for i in range(len(code_retour)):
@@ -133,23 +141,31 @@ def envoyerScoreAttente():
                     erreurs += "||||||||||"
                 fichier_erreur.write(erreurs_prec)
                 fichier_erreur.close()
+        else:
+            print("Pas de nouveaux scores -> Pas d'erreurs")
 
+        print("Inscription de la nouvelle DB...")
         #.Si il n'y a pas eu d'erreur et qu'une nouvelle DB a bien été envoyée
         if db and db != "\n":
+            print("Nouvelle DB récupérée")
             #.On écrit la nouvelle DB à la place de l'ancienne
             fichier_db = open("score/local_db.db", "wb")
             mon_pickler = pickle.Pickler(fichier_db)
             mon_pickler.dump(db)
             fichier_db.close()
+        else:
+            print("Pas de nouvelle DB")
 
         #.Enfin, on supprime les scores en attente puisqu'ils ont été soit 
         #.envoyés, validés et ajoutés à la DB soit placés dans le fichier 
         #.d'erreur pour pouvoir les récupérer en cas d'erreur non justifiée
+        print("Suppression des scores en attente qui ont été envoyés...")
         fichier_score = open("score/en_attente.db", "w")
         fichier_score.write("")
         fichier_score.close()
 
+        print("Envoi de la confirmation de réception...")
         #.On valide pour dire au serveur qu'on peut se déconnecter
         client_to_serv.send("OK\end")
-
+    print(">>> Connection terminée")
 envoyerScoreAttente()
