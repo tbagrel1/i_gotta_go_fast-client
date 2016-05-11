@@ -777,8 +777,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
                       "texte_mode_enh": mode_texte_enh}
         self.stockerLocalScore(dico_score)
         crypterScore.crypterScoreAttente(dico_score)
-        #crypterScore.envoyerScoreAttente()
-        #self.recupererScore()
+        crypterScore.envoyerScoreAttente()
 
     def stockerLocalScore(self, dico_score):
         dico_score_raccourci = {"pseudo": dico_score["pseudo"],
@@ -804,13 +803,6 @@ class ModuleApplication(QMainWindow, Ui_Module):
         fichier_db = open("score/local_db.db", "wb")
         mon_pickler = pickle.Pickler(fichier_db)
         mon_pickler.dump(liste)
-        fichier_db.close()
-
-    def recupererScore(self):
-        liste_score_raccourcis = crypterScore.recupererScore()
-        fichier_db = open("score/local_db.db", "wb")
-        mon_pickler = pickle.Pickler(fichier_db)
-        mon_pickler.dump(liste_score_raccourcis)
         fichier_db.close()
 
 #.##Classe `MenuApplication`
