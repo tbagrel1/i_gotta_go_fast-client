@@ -144,7 +144,7 @@ while True:
             if valid == "OK":
                 valid = addDB(score)
 
-        code_retour.append(valid)
+            code_retour.append(valid)
 
     print(code_retour)
 
