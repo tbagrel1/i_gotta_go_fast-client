@@ -60,7 +60,7 @@ def dechecksum(score):
 def addDB(score):
     global DB
     DB_cur_score = DB.cursor()
-    req = """INSERT INTO IGGF_V1 VALUES (NULL, \"{}\", {}, {}, {}, {}, \"{}\",
+    req = """INSERT INTO IGGF_1 VALUES (NULL, \"{}\", {}, {}, {}, {}, \"{}\",
              \"{}\", \"{}\", \"{}\");""".format(score["pseudo"],
                                                 score["score"],
                                                 score["cpm"],
