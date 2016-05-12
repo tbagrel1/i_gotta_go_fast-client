@@ -60,26 +60,24 @@ def dechecksum(score):
 def addDB(score):
     global DB
     DB_cur_score = DB.cursor()
-    req = """INSERT INTO IGGF_V1 VALUES (id=NULL, pseudo=\"{}\", score={},
-             cpm={}, mpm={}, temps={}, d_h=\"{}\", texte_mode=\"{}\",
-             texte_t=\"{}\", texte_mode_enh=\"{}\");"""\
-                .format(score["pseudo"],
-                        score["score"],
-                        score["cpm"],
-                        score["mpm"],
-                        score["temps"],
-                        score["d_h"],
-                        score["texte_mode"],
-                        score["texte_t"],
-                        score["texte_mode_enh"])
+    req = """INSERT INTO IGGF_V1 VALUES (NULL, \"{}\", {}, {}, {}, {}, \"{}\",
+             \"{}\", \"{}\", \"{}\");""".format(score["pseudo"],
+                                                score["score"],
+                                                score["cpm"],
+                                                score["mpm"],
+                                                score["temps"],
+                                                score["d_h"],
+                                                score["texte_mode"],
+                                                score["texte_t"],
+                                                score["texte_mode_enh"])
     print(req)
-    try:
-        DB_cur_score.execute(req)
-        DB.commit()
-        valid = "OK"
-    except:
-        DB.rollback()
-        valid = "Erreur : Ajout DB"
+    #try:
+    DB_cur_score.execute(req)
+    DB.commit()
+    valid = "OK"
+    # except:
+    #     DB.rollback()
+    #     valid = "Erreur : Ajout DB"
     return valid
 
 #.#Corps du programme
