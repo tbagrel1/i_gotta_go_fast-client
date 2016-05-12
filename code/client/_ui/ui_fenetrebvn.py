@@ -71,6 +71,10 @@ class Ui_FenetreBVN(object):
         self.LabelIcone.setGeometry(QtCore.QRect(20, 20, 561, 151))
         self.LabelIcone.setText(_fromUtf8(""))
         self.LabelIcone.setObjectName(_fromUtf8("LabelIcone"))
+        self.LabelIcone_2 = QtGui.QLabel(FenetreBVN)
+        self.LabelIcone_2.setGeometry(QtCore.QRect(40, 40, 561, 151))
+        self.LabelIcone_2.setText(_fromUtf8(""))
+        self.LabelIcone_2.setObjectName(_fromUtf8("LabelIcone_2"))
 
         self.retranslateUi(FenetreBVN)
         QtCore.QMetaObject.connectSlotsByName(FenetreBVN)

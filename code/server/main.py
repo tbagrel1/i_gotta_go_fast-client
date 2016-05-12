@@ -117,6 +117,7 @@ while True:
     if msg_recu == "TEST":
         serv_to_client.close()
     else:
+        serv_to_client.send("OK\end")
         print("Récupération des scores...")
         msg_recu = ""
         msg_recu += serv_to_client.recv(1024)

@@ -281,7 +281,7 @@ class Ui_Menu(object):
         self.EntryPseudo.setAlignment(QtCore.Qt.AlignCenter)
         self.EntryPseudo.setObjectName(_fromUtf8("EntryPseudo"))
         self.LabelIcone = QtGui.QLabel(self.ZoneCentrale)
-        self.LabelIcone.setGeometry(QtCore.QRect(38, 40, 921, 261))
+        self.LabelIcone.setGeometry(QtCore.QRect(40, 40, 921, 261))
         self.LabelIcone.setText(_fromUtf8(""))
         self.LabelIcone.setObjectName(_fromUtf8("LabelIcone"))
         Menu.setCentralWidget(self.ZoneCentrale)

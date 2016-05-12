@@ -13,6 +13,7 @@ from PyQt4.QtGui import *
 from _ui.ui_menu import Ui_Menu
 from _ui.ui_module import Ui_Module
 from _ui.ui_fenetrebvn import Ui_FenetreBVN
+from _ui.ui_score import Ui_Score
 import crypterScore
 import crypterTexte
 
@@ -34,6 +35,130 @@ import platform
 import unicodedata
 
 #.#Déclaration des classes
+
+#.##Classe `ScoreApplication`
+#.Cette classe hérite des classes `QWidget` et `Ui_Score` et permet la 
+#.création du GUI et sa gestion  
+#.Cette classe contient la majeure partie du programme de la fenêtre des 
+#.scores  
+#.Elle est directement issue de *Qt* et (et donc `PyQt`)
+class ScoreApplication(QWidget, Ui_Score):
+    termine = pyqtSignal()
+    #.###Méthode d'initialisation `__init__`
+    #.Méthode permettant d'initialiser la classe
+    def __init__(self, dico_score, adresse, parent=None):
+        #.On hérite de la méthode `__init__` des classes parentes
+        super(ScoreApplication, self).__init__(parent)
+        #.On initialise les widgets décris dans le fichier auxiliaire 
+        #.`ui_score.py` créé avec *Qt Creator* et `PyQt`
+        self.setupUi(self)
+
+        self.adresse = adresse
+
+        self.LabelIcone.setPixmap(QPixmap(os.getcwd() + "/img/logo3.png"))
+
+        self.BoutonQuitter.clicked.connect(self.quitter)
+        self.BoutonScoresLigne.clicked.connect(self.ouvrirPageScore)
+
+        self.LabelScoreV.setText(unicode(str(dico_score["score"])))
+        self.LabelMPMV.setText(unicode(str(dico_score["mpm"])))
+        self.LabelCPMV.setText(unicode(str(dico_score["cpm"])))
+        rang = self.determinerRang(dico_score["score"])
+        self.LabelRangV.setText(unicode(rang))
+
+        self.genererHTMLDB(dico_score)
+        self.ViewScore.load(QUrl("file:///" + os.getcwd() + "/score/db.html"))
+        self.ViewScore.show()
+        self.LabelScoreV.setFocus()
+
+    def determinerRang(self, score):
+        if score > 5000:
+            rang = "Big-Bang"
+        elif score <= 5000 and score > 3000:
+            rang = "Trou-Noir"
+        elif score <= 3000 and score > 2000:
+            rang = "SuperNova"
+        elif score <= 2000 and score > 1500:
+            rang = "Dieu"
+        elif score <= 1500 and score > 1000:
+            rang = "Demi-Dieu"
+        elif score <= 1000 and score > 750:
+            rang = "Champion"
+        elif score <= 750 and score > 500:
+            rang = "Archer"
+        elif rang <= 500 and rang > 250:
+            rang = "Guerrier"
+        elif rang <= 250 and rang > 100:
+            rang = "Novice"
+        else:
+            rang = "Newbie"
+        return rang
+
+    def keyPressEvent(self, event):
+        if type(event) == QKeyEvent:
+            if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
+                self.quitter()
+
+    def ouvrirPageScore(self):
+        if self.adresse:
+            webbrowser.open("http://" + self.adresse[0] + "/score.php")
+        else:
+            webbrowser.open("http://bagrel.ddns.net/score.php")
+
+    def genererHTMLDB(self, dico_score):
+
+        pseudo_cur = dico_score["pseudo"]
+        score_cur = dico_score["score"]
+
+        c = ""
+        c += "<html lang=\"fr\">\n\t<head>\n\t\t<meta charset=\"UTF-8\" />\n\t\
+\t<style>*\n{\n\tfont-family: \"Comic sans MS\", Verdana, sans-serif;\
+\n\tfont-size: 14px;\n}\n\n#normal\n{\n\n}\n\n#best\n{\n\tbackground-color:\
+ yellow;\n}\n\n#self\n{\n\tbackground-color: red;\n}\n\n#cat\n{\n\tbackground\
+-color: gray;\n}\n\t\t</style>\n\t\t<title>Scores IGGF</titl\
+e>\n\t</head>\n\t<body>\n"
+        c += "\t<table>\n\n\t\t"
+
+        #.On ouvre la DB locale
+        fichier_db = open("score/local_db.db", "rb")
+        mon_pickler = pickle.Unpickler(fichier_db)
+        liste = mon_pickler.load()
+        fichier_db.close()
+        pas_encore_trouve_best = True
+        for elt in liste:
+            type_ligne = "normal"
+            if str(elt["pseudo"])[0] == "#":
+                type_ligne = "cat"
+            elif pas_encore_trouve_best and str(elt["pseudo"]):
+                type_ligne = "best"
+                pas_encore_trouve_best = False
+            elif str(elt["pseudo"]) == str(pseudo_cur) and\
+                 str(elt["score"]) == str(score_cur):
+                type_ligne = "self"
+            else:
+                type_ligne = "normal"
+
+            nl = "<tr id={}><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}\
+</td><td>{}</td><td>{}</td></tr>"\
+                    .format(str(type_ligne),
+                            str(elt["pseudo"]),
+                            str(elt["score"]),
+                            str(elt["cpm"]),
+                            str(elt["mpm"]),
+                            str(elt["temps"]),
+                            str(elt["d_h"]),
+                            str(elt["texte_mode_enh"]))
+            c += (nl + "\n\t\t")
+
+        c += "\n\t</table>\n\t</body>\n</html>"
+
+        self.ViewScore.setHtml(c)
+
+    @pyqtSlot()
+    def quitter(self):
+        self.termine.emit()
+        self.close()
+
 
 #.##Classe `FenetreBVNApplication`
 #.Cette classe hérite des classes `QMainWindow` et `Ui_FenetreBVN` et permet 
@@ -242,6 +367,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.`temps_change` pour régler le GUI sur la position de départ
         self.updateTexteLabel()
         self.temps_change(self.temps_choisi)
+        self.meilleursScores()
 
         #.On fixe la police des labels en police à chasse fixe (monospace)  
         #.Cela permet d'éviter l'erreur avec Windows qui ne reconnait pas la 
@@ -283,6 +409,86 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.On active le focus sur la boîte de texte (comme ça l'utilisateur n'a 
         #.pas à cliquer dessus)
         self.EntryTapeCentre.setFocus()
+
+    def meilleursScores(self):
+        meilleurs = self.trouverMeilleursScores()
+        self.LabelMeilleur1.setText(unicode(str(meilleurs[0])))
+        self.LabelMeilleur2.setText(unicode(str(meilleurs[1])))
+        self.LabelMeilleur3.setText(unicode(str(meilleurs[2])))
+
+    def trouverMeilleursScores(self):
+        try:
+            fichier_db = open("score/local_db.db", "rb")
+            mon_pickler = pickle.Unpickler(fichier_db)
+            liste = mon_pickler.load()
+            fichier_db.close()
+
+            if not liste:
+                print("Erreur début")
+                raise VideException
+
+            pas_encore_trouve_best = True
+            i = 0
+            best = None
+            while pas_encore_trouve_best and i < len(liste) - 1:
+                if liste[i]["pseudo"][0] != "#":
+                    pas_encore_trouve_best = False
+                    best = liste[i]["score"]
+                i += 1
+            if not best:
+                raise VideException
+
+            pas_encore_trouve_best_mode = True
+            i = 0
+            best_mode = None
+            while pas_encore_trouve_best_mode and i < len(liste) - 1:
+                if liste[i]["pseudo"][0] != "#":
+                    if str(liste[i]["texte_mode_enh"]) == self.modeTexteEnh():
+                        pas_encore_trouve_best_mode = False
+                        best_mode = liste[i]["score"]
+                i += 1
+            if not best_mode:
+                best_mode = "..."
+
+            pas_encore_trouve_best_perso = True
+            i = 0
+            best_perso = None
+            while pas_encore_trouve_best_perso and i < len(liste) - 1:
+                if liste[i]["pseudo"][0] != "#":
+                    if str(liste[i]["pseudo"]) == self.pseudo:
+                        pas_encore_trouve_best_perso = False
+                        best_perso = liste[i]["score"]
+                i += 1
+            if not best_perso:
+                best_perso = "..."
+
+            return (best, best_mode, best_perso)
+
+        except:
+            return ("...", "...", "...")
+
+    def modeTexteEnh(self):
+        mode_texte_enh = ""
+        mds = self.mode_texte.split("::")
+        if mds[0] == "expl":
+            mode_texte_enh = "Texte d'exemple {}"\
+                .format(mds[1])
+        elif mds[0] == "syll":
+            mode_texte_enh = "Mots avec la syllabe -{}"\
+                .format(mds[1])
+        elif mds[0] == "mots_fr":
+            mode_texte_enh = "Les {} mots les plus courants"\
+                .format(mds[1])
+        elif mds[0] == "perso":
+            if mds[1] == "nom":
+                mode_texte_enh = "Texte personnalisé : \"{}\""\
+                    .format(mds[2][3:-3].split("/")[-1])
+            elif mds[1] == "entier":
+                mode_texte_enh = "Texte personnalisé : {}..."\
+                    .format(mds[2][3:-3][:min(10, len(mds[2][3:-3]))])
+        else:
+            mode_texte_enh = "Inconnu"
+        return mode_texte_enh
 
     def keyPressEvent(self, event):
         if type(event) == QKeyEvent:
@@ -777,7 +983,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
                       "texte_mode_enh": mode_texte_enh}
         self.stockerLocalScore(dico_score)
         crypterScore.crypterScoreAttente(dico_score)
-        crypterScore.envoyerScoreAttente()
+        adresse = crypterScore.envoyerScoreAttente()
+        self.affFenetreScore(dico_score, adresse)
 
     def stockerLocalScore(self, dico_score):
         dico_score_raccourci = {"pseudo": dico_score["pseudo"],
@@ -804,6 +1011,17 @@ class ModuleApplication(QMainWindow, Ui_Module):
         mon_pickler = pickle.Pickler(fichier_db)
         mon_pickler.dump(liste)
         fichier_db.close()
+
+    def termineScore(self):
+        del self.Score
+        self.show()
+
+    def affFenetreScore(self, dico_score, adresse):
+        self.Score = ScoreApplication(dico_score, adresse)
+        self.Score.termine.connect(self.termineScore)
+        self.Score.setWindowModality(Qt.ApplicationModal)
+        self.hide()
+        self.Score.show()
 
 #.##Classe `MenuApplication`
 #.Cette classe hérite des classes `QMainWindow` et `Ui_Menu` et permet la 

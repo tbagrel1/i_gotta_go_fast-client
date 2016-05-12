@@ -1,0 +1,153 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file '../_sources_ui/Score/score.ui'
+#
+# Created by: PyQt4 UI code generator 4.11.4
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt4 import QtCore, QtGui
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+class Ui_Score(object):
+    def setupUi(self, Score):
+        Score.setObjectName(_fromUtf8("Score"))
+        Score.resize(1000, 730)
+        Score.setMinimumSize(QtCore.QSize(1000, 730))
+        Score.setMaximumSize(QtCore.QSize(1000, 730))
+        self.LabelScore = QtGui.QLabel(Score)
+        self.LabelScore.setGeometry(QtCore.QRect(40, 110, 231, 41))
+        font = QtGui.QFont()
+        font.setPointSize(15)
+        font.setItalic(True)
+        self.LabelScore.setFont(font)
+        self.LabelScore.setFrameShape(QtGui.QFrame.Box)
+        self.LabelScore.setAlignment(QtCore.Qt.AlignCenter)
+        self.LabelScore.setObjectName(_fromUtf8("LabelScore"))
+        self.LabelMPM = QtGui.QLabel(Score)
+        self.LabelMPM.setGeometry(QtCore.QRect(270, 110, 231, 41))
+        font = QtGui.QFont()
+        font.setPointSize(15)
+        font.setItalic(True)
+        self.LabelMPM.setFont(font)
+        self.LabelMPM.setFrameShape(QtGui.QFrame.Box)
+        self.LabelMPM.setAlignment(QtCore.Qt.AlignCenter)
+        self.LabelMPM.setObjectName(_fromUtf8("LabelMPM"))
+        self.LabelCPM = QtGui.QLabel(Score)
+        self.LabelCPM.setGeometry(QtCore.QRect(500, 110, 231, 41))
+        font = QtGui.QFont()
+        font.setPointSize(15)
+        font.setItalic(True)
+        self.LabelCPM.setFont(font)
+        self.LabelCPM.setFrameShape(QtGui.QFrame.Box)
+        self.LabelCPM.setAlignment(QtCore.Qt.AlignCenter)
+        self.LabelCPM.setObjectName(_fromUtf8("LabelCPM"))
+        self.LabelRang = QtGui.QLabel(Score)
+        self.LabelRang.setGeometry(QtCore.QRect(730, 110, 231, 41))
+        font = QtGui.QFont()
+        font.setPointSize(15)
+        font.setItalic(True)
+        self.LabelRang.setFont(font)
+        self.LabelRang.setFrameShape(QtGui.QFrame.Box)
+        self.LabelRang.setAlignment(QtCore.Qt.AlignCenter)
+        self.LabelRang.setObjectName(_fromUtf8("LabelRang"))
+        self.LabelScoreV = QtGui.QLabel(Score)
+        self.LabelScoreV.setGeometry(QtCore.QRect(40, 150, 231, 41))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.LabelScoreV.setFont(font)
+        self.LabelScoreV.setFrameShape(QtGui.QFrame.WinPanel)
+        self.LabelScoreV.setAlignment(QtCore.Qt.AlignCenter)
+        self.LabelScoreV.setObjectName(_fromUtf8("LabelScoreV"))
+        self.LabelMPMV = QtGui.QLabel(Score)
+        self.LabelMPMV.setGeometry(QtCore.QRect(270, 150, 231, 41))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.LabelMPMV.setFont(font)
+        self.LabelMPMV.setFrameShape(QtGui.QFrame.WinPanel)
+        self.LabelMPMV.setAlignment(QtCore.Qt.AlignCenter)
+        self.LabelMPMV.setObjectName(_fromUtf8("LabelMPMV"))
+        self.LabelCPMV = QtGui.QLabel(Score)
+        self.LabelCPMV.setGeometry(QtCore.QRect(500, 150, 231, 41))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.LabelCPMV.setFont(font)
+        self.LabelCPMV.setFrameShape(QtGui.QFrame.WinPanel)
+        self.LabelCPMV.setAlignment(QtCore.Qt.AlignCenter)
+        self.LabelCPMV.setObjectName(_fromUtf8("LabelCPMV"))
+        self.LabelRangV = QtGui.QLabel(Score)
+        self.LabelRangV.setGeometry(QtCore.QRect(730, 150, 231, 41))
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        self.LabelRangV.setFont(font)
+        self.LabelRangV.setFrameShape(QtGui.QFrame.WinPanel)
+        self.LabelRangV.setAlignment(QtCore.Qt.AlignCenter)
+        self.LabelRangV.setObjectName(_fromUtf8("LabelRangV"))
+        self.LabelScoreT = QtGui.QLabel(Score)
+        self.LabelScoreT.setGeometry(QtCore.QRect(40, 30, 921, 61))
+        font = QtGui.QFont()
+        font.setPointSize(36)
+        self.LabelScoreT.setFont(font)
+        self.LabelScoreT.setAlignment(QtCore.Qt.AlignCenter)
+        self.LabelScoreT.setObjectName(_fromUtf8("LabelScoreT"))
+        self.BoutonQuitter = QtGui.QPushButton(Score)
+        self.BoutonQuitter.setGeometry(QtCore.QRect(710, 620, 251, 71))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.BoutonQuitter.setFont(font)
+        self.BoutonQuitter.setObjectName(_fromUtf8("BoutonQuitter"))
+        self.LabelIcone = QtGui.QLabel(Score)
+        self.LabelIcone.setGeometry(QtCore.QRect(40, 620, 251, 71))
+        self.LabelIcone.setText(_fromUtf8(""))
+        self.LabelIcone.setObjectName(_fromUtf8("LabelIcone"))
+        self.BoutonScoresLigne = QtGui.QPushButton(Score)
+        self.BoutonScoresLigne.setGeometry(QtCore.QRect(309, 620, 371, 31))
+        font = QtGui.QFont()
+        font.setPointSize(15)
+        self.BoutonScoresLigne.setFont(font)
+        self.BoutonScoresLigne.setObjectName(_fromUtf8("BoutonScoresLigne"))
+        self.LabelLienSite = QtGui.QLabel(Score)
+        self.LabelLienSite.setGeometry(QtCore.QRect(310, 660, 371, 31))
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.LabelLienSite.setFont(font)
+        self.LabelLienSite.setTextFormat(QtCore.Qt.RichText)
+        self.LabelLienSite.setAlignment(QtCore.Qt.AlignCenter)
+        self.LabelLienSite.setObjectName(_fromUtf8("LabelLienSite"))
+        self.ViewScore = QtWebKit.QWebView(Score)
+        self.ViewScore.setGeometry(QtCore.QRect(40, 210, 921, 391))
+        self.ViewScore.setUrl(QtCore.QUrl(_fromUtf8("about:blank")))
+        self.ViewScore.setObjectName(_fromUtf8("ViewScore"))
+
+        self.retranslateUi(Score)
+        QtCore.QMetaObject.connectSlotsByName(Score)
+
+    def retranslateUi(self, Score):
+        Score.setWindowTitle(_translate("Score", "Score", None))
+        self.LabelScore.setText(_translate("Score", "Votre Score", None))
+        self.LabelMPM.setText(_translate("Score", "Nb de mots par min", None))
+        self.LabelCPM.setText(_translate("Score", "Nb de car par min", None))
+        self.LabelRang.setText(_translate("Score", "Votre Rang", None))
+        self.LabelScoreV.setText(_translate("Score", "3000", None))
+        self.LabelMPMV.setText(_translate("Score", "56.4", None))
+        self.LabelCPMV.setText(_translate("Score", "334.7", None))
+        self.LabelRangV.setText(_translate("Score", "Dieu", None))
+        self.LabelScoreT.setText(_translate("Score", "Scores", None))
+        self.BoutonQuitter.setText(_translate("Score", "Quitter", None))
+        self.BoutonScoresLigne.setText(_translate("Score", "SCORES EN LIGNE", None))
+        self.LabelLienSite.setText(_translate("Score", "<html><head/><body><p><a href=\"http://bagrel.ddns.net\"><span style=\" font-style:italic; text-decoration: underline; color:#0000ff;\">bagrel.ddns.net</span></a></p></body></html>", None))
+
+from PyQt4 import QtWebKit

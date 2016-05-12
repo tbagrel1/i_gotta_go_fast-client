@@ -750,7 +750,7 @@
    <widget class="QLabel" name="LabelIcone">
     <property name="geometry">
      <rect>
-      <x>38</x>
+      <x>40</x>
       <y>40</y>
       <width>921</width>
       <height>261</height>

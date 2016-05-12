@@ -81,11 +81,22 @@ def envoyerScoreAttente():
         client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_to_serv.connect((adresse_port[0], adresse_port[1]))
         client_to_serv.send("OTHER\end")
+
+        msg_recu = ""
+        msg_recu += client_to_serv.recv(1024)
+        while msg_recu[-4:] != "\end":
+            msg_recu += client_to_serv.recv(1024)
+        msg_recu = msg_recu[:-4]
+        print(msg_recu)
+
         #.On ouvre le fichier de scores cryptés en attente
-        fichier_score = open("score/en_attente.db", "r")
-        scores_a_envoyer = fichier_score.read()
-        print(scores_a_envoyer)
-        fichier_score.close()
+        try:
+            fichier_score = open("score/en_attente.db", "r")
+            scores_a_envoyer = fichier_score.read()
+            fichier_score.close()
+        except:
+            scores_a_envoyer = ""
+            print(scores_a_envoyer)
         #.Si il y a des scores en attente, on les envoie, sinon on envoie une
         #.chaîne vide
         print("Envoi des scores...")
@@ -124,54 +135,54 @@ def envoyerScoreAttente():
         print(db)
 
         #.Si des scores nouveaux ont été envoyés, on a besoin de s'occuper des 
-        #.codes d'erreurs
-        print("Gestion des codes d'erreurs")
-        if scores_a_envoyer and scores_a_envoyer != "\n":
-            print("Nouveaux scores -> Erreurs ?")
-            erreurs = []
-            #.Pour chaque code d'erreur qui ne vaut pas `"OK"`
-            for i in range(len(code_retour)):
-                if code_retour[i] != "OK":
-                    #.On ajoute le score correspondant à la liste des scores
-                    #.qui contiennent les erreurs
-                    erreurs.append(scores_a_envoyer[i])
-            #.Si il y a eu des erreurs
-            if erreurs:
-                #.On sépare les différents scores qui ont été envoyés
-                scores_a_envoyer = [elt for elt in
-                                    scores_a_envoyer.split("||||||||||") if 
-                                    elt and elt != "\n"]
-                #.On essaye d'ouvrir le fichier des erreurs, et on récupère 
-                #.les erreurs déjà inscrites, pour ne pas écrire plusieurs 
-                #.fois les mêmes
-                try:
-                    fichier_erreur = open("score/erreur.db", "r")
-                    erreurs_prec = [elt for elt in 
-                                    fichier_erreur.read().split("||||||||||")
-                                    if elt and elt != "\n"]
-                    fichier_erreur.close()
-                #.Si le fichier n'existe pas, on définit qu'il n'y a pas 
-                #.encore d'erreurs enregistrées
-                except:
-                    erreurs_prec = []
-                #.Pour chaque nouvelle erreur
-                for erreur in erreurs:
-                    #.Si elle n'est pas dans la liste des erreurs déjà 
-                    #.enregistrées, on l'ajoute
-                    if erreur in erreurs_prec:
-                        pass
-                    else:
-                        erreurs_prec.append(erreur)
-                #.On ouvre ensuite le fichier d'erreur en écriture et on écrit 
-                #.la liste des erreurs
-                fichier_erreur = open("score/erreur.db", "w")
-                erreurs_prec = "||||||||||".join(erreurs_prec)
-                if erreurs:
-                    erreurs += "||||||||||"
-                fichier_erreur.write(erreurs_prec)
-                fichier_erreur.close()
-        else:
-            print("Pas de nouveaux scores -> Pas d'erreurs")
+        # #.codes d'erreurs
+        # print("Gestion des codes d'erreurs")
+        # if scores_a_envoyer and scores_a_envoyer != "\n":
+        #     print("Nouveaux scores -> Erreurs ?")
+        #     erreurs = []
+        #     #.Pour chaque code d'erreur qui ne vaut pas `"OK"`
+        #     for i in range(len(code_retour)):
+        #         if code_retour[i] != "OK":
+        #             #.On ajoute le score correspondant à la liste des scores
+        #             #.qui contiennent les erreurs
+        #             erreurs.append(scores_a_envoyer[i])
+        #     #.Si il y a eu des erreurs
+        #     if erreurs:
+        #         #.On sépare les différents scores qui ont été envoyés
+        #         scores_a_envoyer = [elt for elt in
+        #                             scores_a_envoyer.split("||||||||||") if 
+        #                             elt and elt != "\n"]
+        #         #.On essaye d'ouvrir le fichier des erreurs, et on récupère 
+        #         #.les erreurs déjà inscrites, pour ne pas écrire plusieurs 
+        #         #.fois les mêmes
+        #         try:
+        #             fichier_erreur = open("score/erreur.db", "r")
+        #             erreurs_prec = [elt for elt in 
+        #                             fichier_erreur.read().split("||||||||||")
+        #                             if elt and elt != "\n"]
+        #             fichier_erreur.close()
+        #         #.Si le fichier n'existe pas, on définit qu'il n'y a pas 
+        #         #.encore d'erreurs enregistrées
+        #         except:
+        #             erreurs_prec = []
+        #         #.Pour chaque nouvelle erreur
+        #         for erreur in erreurs:
+        #             #.Si elle n'est pas dans la liste des erreurs déjà 
+        #             #.enregistrées, on l'ajoute
+        #             if erreur in erreurs_prec:
+        #                 pass
+        #             else:
+        #                 erreurs_prec.append(erreur)
+        #.On ouvre ensuite le fichier d'erreur en écriture et on écrit 
+        #.la liste des erreurs
+        #         fichier_erreur = open("score/erreur.db", "w")
+        #         erreurs_prec = "||||||||||".join(erreurs_prec)
+        #         if erreurs:
+        #             erreurs += "||||||||||"
+        #         fichier_erreur.write(erreurs_prec)
+        #         fichier_erreur.close()
+        # else:
+        #     print("Pas de nouveaux scores -> Pas d'erreurs")
 
         print("Inscription de la nouvelle DB...")
         #.Si il n'y a pas eu d'erreur et qu'une nouvelle DB a bien été envoyée
@@ -197,3 +208,4 @@ def envoyerScoreAttente():
         #.On valide pour dire au serveur qu'on peut se déconnecter
         client_to_serv.send("OK\end")
     print(">>> Connection terminée")
+    return adresse_port
