@@ -197,4 +197,3 @@ def envoyerScoreAttente():
         #.On valide pour dire au serveur qu'on peut se déconnecter
         client_to_serv.send("OK\end")
     print(">>> Connection terminée")
-envoyerScoreAttente()

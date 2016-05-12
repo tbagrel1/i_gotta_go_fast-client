@@ -873,6 +873,7 @@ class MenuApplication(QMainWindow, Ui_Menu):
         self.FenetreBVN.termine.connect(self.termineBVN)
         self.FenetreBVN.setWindowModality(Qt.ApplicationModal)
         self.FenetreBVN.show()
+        crypterScore.envoyerScoreAttente()
 
     def normaliserTexte(self, texte):
         texte = (re.sub(r"[\n\t\b\a\r]", r" ", texte)).strip()
