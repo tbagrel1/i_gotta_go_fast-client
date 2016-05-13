@@ -86,9 +86,9 @@ class ScoreApplication(QWidget, Ui_Score):
             rang = "Champion"
         elif score <= 750 and score > 500:
             rang = "Archer"
-        elif rang <= 500 and rang > 250:
+        elif score <= 500 and score > 250:
             rang = "Guerrier"
-        elif rang <= 250 and rang > 100:
+        elif score <= 250 and score > 100:
             rang = "Novice"
         else:
             rang = "Newbie"
