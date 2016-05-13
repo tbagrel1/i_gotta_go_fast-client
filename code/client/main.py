@@ -9,6 +9,7 @@ from __future__ import division
 #.Import des bibliothèques pour `PyQt` (interface graphique)
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from PyQt4 import QtNetwork
 #.Import de la fenêtre graphique designée avec *Qt Creator*
 from _ui.ui_menu import Ui_Menu
 from _ui.ui_module import Ui_Module
