@@ -810,6 +810,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
     def temps_fini(self):
         #.On désactive tous les labels et on remet la couleur des flèches par 
         #.défaut (noir)
+        print("Temps fini")
         self.LabelTexteDroite.setEnabled(False)
         self.LabelTexteCentre.setEnabled(False)
         self.LabelTexteGauche.setEnabled(False)
@@ -823,6 +824,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.jeton_temps_finiM = True
         self.setUpRecommencer()
 
+        print("Appel gerer score")
         self.gererScore()
 
     #.###Méthode `setUpRecommencer`
@@ -933,25 +935,34 @@ class ModuleApplication(QMainWindow, Ui_Module):
                                                            0)))))
 
     def gererScore(self):
+        print("Début Gérer score")
+        print("Gestion temps")
         dh = localtime()
         AAAA = str(dh[0])
+        print("Année")
         while len(AAAA) < 4:
             AAAA = "0" + AAAA
         MM = str(dh[1])
+        print("Mois")
         while len(MM) < 2:
             MM = "0" + MM
+        print("jour")
         JJ = str(dh[2])
         while len(JJ) < 2:
             JJ = "0" + JJ
+        print("Heure")
         hh = str(dh[3])
         while len(hh) < 2:
-            hh + "0" + hh
+            hh = "0" + hh
+        print("minute")
         mm = str(dh[4])
         while len(mm) < 2:
             mm = "0" + mm
+        print("seconde")
         ss = str(dh[5])
         while len(ss) < 2:
             ss = "0" + ss
+        print("Fin gestion temps debut gestion mode")
         mds = self.mode_texte.split("::")
         if mds[0] == "expl":
             mode_texte_enh = "Texte d'exemple {}"\
@@ -971,6 +982,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
                     .format(mds[2][3:-3][:min(10, len(mds[2][3:-3]))])
         else:
             mode_texte_enh = "Inconnu"
+        print("Fin mode début dico")
         dico_score = {"pseudo": self.pseudo,
                       "score": int(round(self.score, 0)),
                       "cpm": round(self.car_min, 1),
@@ -981,9 +993,13 @@ class ModuleApplication(QMainWindow, Ui_Module):
                       "texte_mode": self.mode_texte,
                       "texte_t": self.texte_d.encode("utf-8"),
                       "texte_mode_enh": mode_texte_enh}
+        print("--> Dico généré")
         self.stockerLocalScore(dico_score)
+        print("--> Local Score fait")
         crypterScore.crypterScoreAttente(dico_score)
+        print("--> En Attente Score fait")
         adresse = crypterScore.envoyerScoreAttente()
+        print("--> Envoyer fait")
         self.affFenetreScore(dico_score, adresse)
 
     def stockerLocalScore(self, dico_score):
@@ -1017,11 +1033,17 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.show()
 
     def affFenetreScore(self, dico_score, adresse):
+        print("INIT")
         self.Score = ScoreApplication(dico_score, adresse)
+        print("Créée")
         self.Score.termine.connect(self.termineScore)
+        print("Bind signal")
         self.Score.setWindowModality(Qt.ApplicationModal)
+        print("Modal")
         self.hide()
+        print("Module caché")
         self.Score.show()
+        print("Affiché")
 
 #.##Classe `MenuApplication`
 #.Cette classe hérite des classes `QMainWindow` et `Ui_Menu` et permet la 
