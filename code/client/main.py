@@ -112,13 +112,47 @@ class ScoreApplication(QWidget, Ui_Score):
         score_cur = dico_score["score"]
 
         c = ""
-        c += "<html lang=\"fr\">\n\t<head>\n\t\t<meta charset=\"UTF-8\" />\n\t\
-\t<style>*\n{\n\tfont-family: \"Comic sans MS\", Verdana, sans-serif;\
-\n\tfont-size: 14px;\n}\n\n#normal\n{\n\n}\n\n#best\n{\n\tbackground-color:\
- yellow;\n}\n\n#self\n{\n\tbackground-color: red;\n}\n\n#cat\n{\n\tbackground\
--color: gray;\n}\n\t\t</style>\n\t\t<title>Scores IGGF</titl\
-e>\n\t</head>\n\t<body>\n"
-        c += "\t<table>\n\n\t\t"
+        c +=\
+            """<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <style>
+            *
+            {
+                font-family: "Comic sans MS", Verdana, sans-serif;
+                font-size: 14px;
+            }
+
+            #normal
+            {
+
+            }
+
+            #best
+            {
+                background-color: yellow;
+            }
+
+            #self
+            {
+                background-color: red;
+            }
+
+            #cat
+            {
+                background-color: gray;
+            }
+        </style>
+
+        <title>Scores IGGF</title>
+    </head>
+
+    <body>
+"""
+
+        c +=\
+            """        <table>
+"""
 
         #.On ouvre la DB locale
         fichier_db = open("score/local_db.db", "rb")
@@ -130,30 +164,44 @@ e>\n\t</head>\n\t<body>\n"
             type_ligne = "normal"
             if str(elt["pseudo"])[0] == "#":
                 type_ligne = "cat"
-            elif pas_encore_trouve_best and str(elt["pseudo"]):
+            elif pas_encore_trouve_best:
                 type_ligne = "best"
                 pas_encore_trouve_best = False
-            elif str(elt["pseudo"]) == str(pseudo_cur) and\
-                 str(elt["score"]) == str(score_cur):
+            elif (str(elt["pseudo"]) == str(pseudo_cur) and
+                  str(elt["score"]) == str(score_cur)):
                 type_ligne = "self"
             else:
                 type_ligne = "normal"
 
-            nl = "<tr id={}><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}\
-</td><td>{}</td><td>{}</td></tr>"\
-                    .format(str(type_ligne),
-                            str(elt["pseudo"]),
-                            str(elt["score"]),
-                            str(elt["cpm"]),
-                            str(elt["mpm"]),
-                            str(elt["temps"]),
-                            str(elt["d_h"]),
-                            str(elt["texte_mode_enh"]))
-            c += (nl + "\n\t\t")
+            nl = """            <tr id={}>
+                <td>{}</td>
+                <td>{}</td>
+                <td>{}</td>
+                <td>{}</td>
+                <td>{}</td>
+                <td>{}</td>
+                <td>{}</td>
+            </tr>
+"""\
+                .format(str(type_ligne),
+                        str(elt["pseudo"]),
+                        str(elt["score"]),
+                        str(elt["cpm"]),
+                        str(elt["mpm"]),
+                        str(elt["temps"]),
+                        str(elt["d_h"]),
+                        str(elt["texte_mode_enh"]))
+            c += nl
 
-        c += "\n\t</table>\n\t</body>\n</html>"
+        c += """        </table>
+    </body>
+</html>"""
 
-        self.ViewScore.setHtml(c)
+        fichier_html = open("score/fichier_html.html", "w")
+        fichier_html.write(c)
+        fichier_html.close()
+
+        self.ViewScore.setHtml(c.decode("utf-8"))
 
     @pyqtSlot()
     def quitter(self):
@@ -903,14 +951,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.*À détailler*
     def compterScore(self):
         if self.dernier_juste:
-            temps_score = time()
-            temps_ecoule_l = temps_score - self.temps_score_precedant
-            inv_temps_pour_car = 1 / (temps_ecoule_l)
-            self.temps_score_precedant = temps_score
-            nombre_erreur_pour_car = self.car_faux -\
-                self.car_faux_precedant
-            self.car_faux_precedant = self.car_faux
-            inv_de_err_plus_un = 1 / (nombre_erreur_pour_car + 1)
+
             #.On recherche le type de caractères
             if self.der_car_T == " ":
                 coeff = 0.4
@@ -924,14 +965,23 @@ class ModuleApplication(QMainWindow, Ui_Module):
                 coeff = 1.2
             else:
                 coeff = 1.6
+
+            #.On calcule le temps et les différents facteurs
+            temps_score = time()
+            temps_ecoule_l = temps_score - self.temps_score_precedant
+            inv_temps_pour_car = 1 / (temps_ecoule_l)
+            self.temps_score_precedant = temps_score
+            nombre_erreur_pour_car = self.car_faux -\
+                self.car_faux_precedant
+            self.car_faux_precedant = self.car_faux
+            inv_de_err_plus_un = 1 / (nombre_erreur_pour_car + 1)
             ln_tps_plus_C_div_tps = (log(self.temps_choisi) +
                                      self.C_TEMPS) / self.temps_choisi
+
+            #.On calcule le score final et on l'affiche
             score_car = inv_temps_pour_car * inv_de_err_plus_un * \
                 ln_tps_plus_C_div_tps * coeff * self.C_SCORE * self.coeff_pre
             self.score += score_car
-
-            #.On affiche le score arrondi à l'entier le plus proche dans
-            #.le GUI
             self.LabelScoreV.setText(unicode(str(int(round(self.score,
                                                            0)))))
 
