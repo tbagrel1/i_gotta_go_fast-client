@@ -35,7 +35,8 @@ import atexit
 import platform
 import unicodedata
 
-#.#Déclaration des classes
+#.#Déclaration des cla
+sses
 
 #.##Classe `ScoreApplication`
 #.Cette classe hérite des classes `QWidget` et `Ui_Score` et permet la 
