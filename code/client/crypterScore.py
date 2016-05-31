@@ -1,211 +1,156 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*
+#ref_to_md
 
-# Import des modules
+#.#Import des modules
 
-import socket
+#.##Imports `from`
+
+#.Cryptage
+from Crypto.Cipher import AES
+#.Interface graphique `PyQt4`
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from PyQt4 import QtNetwork
+
+#.##Imports standards
+
+#.Import des modules standards
+import os
 import sys
 import pickle
-import os
+import binascii
+#.Import de `hashlib` pour la checksum
 import hashlib
-import base64
-from Crypto.Cipher import AES
-from multiprocessing import Process, Pipe
+#.Import `urllib` pour lire les pages web
+import urllib
 
-class TimeoutProcess():
-    def __init__(self, fonction, timeout):
-        self.fonction = fonction
-        self.timeout = timeout
+#.#Déclaration des classes
 
-    def __call__(self, *args, **kwargs):
-        def process_exec_nt(pipe, fonction, args, kwargs):
-            valeur_retournee = fonction(*args, **kwargs)
-            pipe.send(valeur_retournee)
+#.##Classe `ThreadSyncDB`
+#.La classe `ThreadSyncDB`, héritée de `QThread`, permet de synchroniser la DB 
+#.locale avec la DB online en processus d'arrière plan, qui fonctionne seul  
+#.Le `ThreadSyncDB` communique avec le programme principal avec les signaux
+class ThreadSyncDB(QThread):
+    finished = pyqtSignal()
 
-        pipe_parent, pipe_enfant = Pipe()
-        process_exec_t = Process(target=process_exec_nt, args=(pipe_enfant,
-                                                               self.fonction,
-                                                               args,
-                                                               kwargs))
-        process_exec_t.start()
-        process_exec_t.join(self.timeout)
+    #.###Méthode d'initialisation `__init__`
+    #.Méthode permettant d'initialiser la classe
+    def __init__(self):
+        #.On hérite de la méthode `__init__` de la classe parente (`QThread`)
+        QThread.__init__(self)
 
-        if process_exec_t.is_alive():
-            process_exec_t.terminate()
-            return None
-        else:
-            return pipe_parent.recv()
+    #.###Méthode principale `run`
+    #.Cette méthode correspond au corps du thread, qui est appelée lors du 
+    #.`start()`, et dont la fin correspond à la fin de l'exécution du thread
+    def run(self):
 
-def crypterScoreAttente(dico_score):
+        #.ON ENVOIE LES SCORES EN ATTENTE
+        test_co = urllib\
+            .urlopen("http://tbagrel1.pythonanywhere.com/app1/sendScore")
+        if test_co.read() == "OK":
+            try:
+                fichier_score = open("score/en_attente.db", "r")
+                scores_a_envoyer_brut = fichier_score.read()
+                fichier_score.close()
+            except:
+                scores_a_envoyer_brut = ""
 
-    encodeur = AES.new('mot_de_passe_16o', AES.MODE_CBC, "vecteur_init_16o")
+            fichier_erreur = open("score/erreur.db", "a")
 
-    checksum = hashlib.md5(open(sys.argv[0], "rb").read()).hexdigest()
-    liste = [checksum, dico_score]
+            liste_score = [elt for elt in
+                           scores_a_envoyer_brut.split("||||||||||") if elt and
+                           elt != "\n"]
+            if liste_score:
+                for elt in liste_score:
+                    #.`elt` correspond au score envoyé
+                    retour = urllib.\
+                        ulropen("http://tbagrel1.pythonanywhere.com/app1/" +
+                                "sendScore?score={}".format(elt)).read()
+                    if retour == "OK" or\
+                        retour == "Erreur : Hexadecimal Decode" or\
+                        retour == "Erreur : Decrypt AES" or\
+                            retour == "Erreur : Depickler":
+                            pass
+                    else:
+                        fichier_erreur.append(elt + "||||||||||")
 
-    fichier_temp = open("score/temp.tmp", "w")
-    mon_pickler = pickle.Pickler(fichier_temp)
-    mon_pickler.dump(liste)
-    fichier_temp.close()
+            fichier_erreur.close()
 
-    fichier_temp = open("score/temp.tmp", "r")
-    texte = fichier_temp.read()
-    fichier_temp.close()
-    os.remove("score/temp.tmp")
+        #.ON EFFACE LES SCORES EN ATTENTE
 
-    texte += "\0" * (16 - (len(texte) % 16))
-
-    texte_crypte = base64.encodestring(encodeur.encrypt(texte))
-    fichier_score_attente = open("score/en_attente.db", "a")
-    fichier_score_attente.write(texte_crypte + "||||||||||")
-    fichier_score_attente.close()
-
-def connection(adresse, port):
-    try:
-        client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_to_serv.connect((adresse, port))
-        print("Réussi {}".format(adresse))
-        client_to_serv.send("TEST\end")
-        return adresse, port
-    except:
-        print("Raté {}".format(adresse))
-        return None
-
-def envoyerScoreAttente():
-
-    adresse_port = TimeoutProcess(connection, 1)("pi-pc", 25565)
-    if not adresse_port:
-        adresse_port = TimeoutProcess(connection, 2)("bagrel.ddns.net", 25565)
-    #.Si l'on a réussi à se connecter à l'une des adresses
-    if adresse_port:
-        client_to_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_to_serv.connect((adresse_port[0], adresse_port[1]))
-        client_to_serv.send("OTHER\end")
-
-        msg_recu = ""
-        msg_recu += client_to_serv.recv(1024)
-        while msg_recu[-4:] != "\end":
-            msg_recu += client_to_serv.recv(1024)
-        msg_recu = msg_recu[:-4]
-        print(msg_recu)
-
-        #.On ouvre le fichier de scores cryptés en attente
-        try:
-            fichier_score = open("score/en_attente.db", "r")
-            scores_a_envoyer = fichier_score.read()
-            fichier_score.close()
-        except:
-            scores_a_envoyer = ""
-            print(scores_a_envoyer)
-        #.Si il y a des scores en attente, on les envoie, sinon on envoie une
-        #.chaîne vide
-        print("Envoi des scores...")
-        if scores_a_envoyer and scores_a_envoyer != "\n":
-            print("Il y a des nouveaux scores -> on les envoie")
-            scores_a_envoyer += "\end"
-            client_to_serv.send(scores_a_envoyer)
-        else:
-            print("Pas de nouveaux scores, on envoie une chaîne vide")
-            client_to_serv.send("\end")
-
-        print("Réception de la DB...")
-        #.Le serveur va ajouter les scores dans la DB et renvoyer un tuple 
-        #.contenant les codes d'erreurs ainsi que la nouvelle DB mise à jour
-        msg_recu = ""
-        msg_recu += client_to_serv.recv(1024)
-        while msg_recu[-4:] != "\end":
-            msg_recu += client_to_serv.recv(1024)
-        msg_recu = msg_recu[:-4]
-        print(msg_recu)
-        #.On décode et dépickle le message reçu et on récupère les codes de 
-        #.retour et la nouvelle DB
-        print("Decodage de la DB...")
-        retour = base64.decodestring(msg_recu)
-        fichier_temp = open("temp.tmp", "wb")
-        fichier_temp.write(retour)
-        fichier_temp.close()
-        fichier_temp = open("temp.tmp", "rb")
-        mon_pickler = pickle.Unpickler(fichier_temp)
-        retour = mon_pickler.load()
-        fichier_temp.close()
-        os.remove("temp.tmp")
-        code_retour = retour[0]
-        db = retour[1]
-        print(code_retour)
-        print(db)
-
-        #.Si des scores nouveaux ont été envoyés, on a besoin de s'occuper des 
-        # #.codes d'erreurs
-        # print("Gestion des codes d'erreurs")
-        # if scores_a_envoyer and scores_a_envoyer != "\n":
-        #     print("Nouveaux scores -> Erreurs ?")
-        #     erreurs = []
-        #     #.Pour chaque code d'erreur qui ne vaut pas `"OK"`
-        #     for i in range(len(code_retour)):
-        #         if code_retour[i] != "OK":
-        #             #.On ajoute le score correspondant à la liste des scores
-        #             #.qui contiennent les erreurs
-        #             erreurs.append(scores_a_envoyer[i])
-        #     #.Si il y a eu des erreurs
-        #     if erreurs:
-        #         #.On sépare les différents scores qui ont été envoyés
-        #         scores_a_envoyer = [elt for elt in
-        #                             scores_a_envoyer.split("||||||||||") if 
-        #                             elt and elt != "\n"]
-        #         #.On essaye d'ouvrir le fichier des erreurs, et on récupère 
-        #         #.les erreurs déjà inscrites, pour ne pas écrire plusieurs 
-        #         #.fois les mêmes
-        #         try:
-        #             fichier_erreur = open("score/erreur.db", "r")
-        #             erreurs_prec = [elt for elt in 
-        #                             fichier_erreur.read().split("||||||||||")
-        #                             if elt and elt != "\n"]
-        #             fichier_erreur.close()
-        #         #.Si le fichier n'existe pas, on définit qu'il n'y a pas 
-        #         #.encore d'erreurs enregistrées
-        #         except:
-        #             erreurs_prec = []
-        #         #.Pour chaque nouvelle erreur
-        #         for erreur in erreurs:
-        #             #.Si elle n'est pas dans la liste des erreurs déjà 
-        #             #.enregistrées, on l'ajoute
-        #             if erreur in erreurs_prec:
-        #                 pass
-        #             else:
-        #                 erreurs_prec.append(erreur)
-        #.On ouvre ensuite le fichier d'erreur en écriture et on écrit 
-        #.la liste des erreurs
-        #         fichier_erreur = open("score/erreur.db", "w")
-        #         erreurs_prec = "||||||||||".join(erreurs_prec)
-        #         if erreurs:
-        #             erreurs += "||||||||||"
-        #         fichier_erreur.write(erreurs_prec)
-        #         fichier_erreur.close()
-        # else:
-        #     print("Pas de nouveaux scores -> Pas d'erreurs")
-
-        print("Inscription de la nouvelle DB...")
-        #.Si il n'y a pas eu d'erreur et qu'une nouvelle DB a bien été envoyée
-        if db and db != "\n":
-            print("Nouvelle DB récupérée")
-            #.On écrit la nouvelle DB à la place de l'ancienne
-            fichier_db = open("score/local_db.db", "wb")
-            mon_pickler = pickle.Pickler(fichier_db)
-            mon_pickler.dump(db)
-            fichier_db.close()
-        else:
-            print("Pas de nouvelle DB")
-
-        #.Enfin, on supprime les scores en attente puisqu'ils ont été soit 
-        #.envoyés, validés et ajoutés à la DB soit placés dans le fichier 
-        #.d'erreur pour pouvoir les récupérer en cas d'erreur non justifiée
-        print("Suppression des scores en attente qui ont été envoyés...")
         fichier_score = open("score/en_attente.db", "w")
         fichier_score.write("")
         fichier_score.close()
 
-        print("Envoi de la confirmation de réception...")
-        #.On valide pour dire au serveur qu'on peut se déconnecter
-        client_to_serv.send("OK\end")
-    print(">>> Connection terminée")
-    return adresse_port
+        #.ON RÉCUPÈRE LA NOUVELLE DB
+
+        db = urllib.urlopen("http://tbagrel1.pythonanywhere.com/app1/getDB")
+        db = db.read()
+        if db and db != "\n":
+            print(db)
+            db = binascii.a2b_hex(db)
+            print(db)
+            fichier_temp = open("score/temp.tmp", "w")
+            fichier_temp.write(db)
+            fichier_temp.close()
+            fichier_temp = open("score/temp.tmp", "r")
+            mon_pickler = pickle.Unpickler(fichier_temp)
+            db = mon_pickler.load()
+            fichier_temp.close()
+            os.remove("score/temp.tmp")
+        if db and db != "\n":
+            fichier_db = open("score/local_db.db", "w")
+            mon_pickler = pickle.Pickler(fichier_db)
+            mon_pickler.dump(db)
+            fichier_db.close()
+
+        #.On émet le signal de fin
+        self.finished.emit()
+
+#.##Déclaration des fonctions
+
+#.##Fonction `crypterScoreAttente`
+#.Fonction permettant de crypter et d'ajouter un score au fichier 
+#.`en_attente.txt`
+def crypterScoreAttente(dico_score):
+    #.On créé l'encodeur avec le mot de passe et le vecteur d'initialisation 
+    #.choisi
+    encodeur = AES.new('mot_de_passe_16o', AES.MODE_CBC, "vecteur_init_16o")
+    #.On récupère la checksum du fichier qui envoie le score
+    checksum = hashlib.md5(open(sys.argv[0], "rb").read()).hexdigest()
+    #.On créé une liste contenant la checksum ainsi que le dictionnaire de 
+    #.score passé en argument
+    liste = [checksum, dico_score]
+    #.On ouvre le fichier temporaire pour pickle la liste
+    fichier_temp = open("score/temp.tmp", "w")
+    mon_pickler = pickle.Pickler(fichier_temp)
+    mon_pickler.dump(liste)
+    fichier_temp.close()
+    #.On lit le fichier et on récupère la chaîne correspondant à la liste 
+    #.picklée
+    fichier_temp = open("score/temp.tmp", "r")
+    texte = fichier_temp.read()
+    fichier_temp.close()
+    #.Une fois fini, on supprime le fichier temporaire
+    os.remove("score/temp.tmp")
+
+    #.On ajoute au texte récupéré des caractères `"\0"` pour que la longueur 
+    #.de la chaîne soit un multiple de 16
+    texte += "\0" * (16 - (len(texte) % 16))
+
+    #.On envrypte le texte et on le code en hexadécimal
+    texte_crypte = binascii.b2a_hex(encodeur.encrypt(texte))
+    #.On l'ajoute au fichier de scores en attente
+    fichier_score_attente = open("score/en_attente.db", "a")
+    fichier_score_attente.write(texte_crypte + "||||||||||")
+    fichier_score_attente.close()
+
+#.#Programme principal
+
+#.##Test de lancement standalone
+#.Test permettant de lancer le programme si il est exécuté directement tout 
+#.seul, sans import
+if __name__ == "__main__":
+    #.On ne fait rien
+    pass

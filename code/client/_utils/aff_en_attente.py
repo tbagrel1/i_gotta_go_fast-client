@@ -12,7 +12,7 @@
 # Import des modules
 
 import pickle
-import base64
+import binascii
 import os
 from Crypto.Cipher import AES
 
@@ -24,7 +24,7 @@ fichier.close()
 message_crypte = [elt for elt in message_crypte.split("||||||||||") if elt]
 for elt in message_crypte:
     decodeur = AES.new('mot_de_passe_16o', AES.MODE_CBC, "vecteur_init_16o")
-    elt_decrypte = decodeur.decrypt(base64.decodestring(elt))
+    elt_decrypte = decodeur.decrypt(binascii.a2b_hex(elt))
     fichier = open("temp.tmp", "w")
     fichier.write(elt_decrypte)
     fichier.close()

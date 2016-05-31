@@ -13,14 +13,13 @@
 #include <QtGui/QAction>
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
+#include <QtGui/QCheckBox>
 #include <QtGui/QFrame>
 #include <QtGui/QGraphicsView>
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
 #include <QtGui/QLineEdit>
 #include <QtGui/QMainWindow>
-#include <QtGui/QMenu>
-#include <QtGui/QMenuBar>
 #include <QtGui/QPlainTextEdit>
 #include <QtGui/QPushButton>
 #include <QtGui/QRadioButton>
@@ -42,11 +41,10 @@ public:
     QAction *MenuAideOuvrirAide;
     QAction *MenuAideOuvrirCredits;
     QWidget *ZoneCentrale;
-    QGraphicsView *LabelIcone;
+    QGraphicsView *FondIcone;
     QLabel *LabelChoisissez;
     QFrame *FrameTempsJeu;
     QLabel *LabelTempsJeuT;
-    QLabel *LabelTempsJeu;
     QLabel *LabelTempsJeuMinutes;
     QLabel *LabelTempsJeuSecondes;
     QLabel *LabelTempsColon;
@@ -74,32 +72,32 @@ public:
     QWidget *TabPerso;
     QRadioButton *CollerTexteR;
     QPlainTextEdit *CollerTexteV;
-    QRadioButton *NonTexteR;
+    QRadioButton *NomTexteR;
     QLineEdit *NomTexteV;
     QFrame *FrameControles;
     QLabel *LabelLancez;
     QPushButton *BoutonCommencer;
     QPushButton *BoutonQuitter;
     QPushButton *BoutonAide;
-    QLineEdit *EntryParam;
-    QPushButton *BoutonGenererParam;
-    QPushButton *BoutonAppliquerParam;
-    QMenuBar *BarreMenu;
-    QMenu *MenuFichier;
-    QMenu *MenuAide;
+    QFrame *FramePseudo;
+    QLabel *LabelPseudoT;
+    QLabel *LabelPseudo;
+    QLineEdit *EntryPseudo;
+    QCheckBox *CheckBoxNoOnline;
+    QLabel *LabelIcone;
 
     void setupUi(QMainWindow *Menu)
     {
         if (Menu->objectName().isEmpty())
             Menu->setObjectName(QString::fromUtf8("Menu"));
-        Menu->resize(1000, 600);
+        Menu->resize(1000, 730);
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(Menu->sizePolicy().hasHeightForWidth());
         Menu->setSizePolicy(sizePolicy);
-        Menu->setMinimumSize(QSize(1000, 600));
-        Menu->setMaximumSize(QSize(1000, 600));
+        Menu->setMinimumSize(QSize(1000, 730));
+        Menu->setMaximumSize(QSize(1000, 730));
         actionImprimer_scores = new QAction(Menu);
         actionImprimer_scores->setObjectName(QString::fromUtf8("actionImprimer_scores"));
         actionPoubelle_Ctrl_Q = new QAction(Menu);
@@ -110,6 +108,7 @@ public:
         actionTruc_FTG->setObjectName(QString::fromUtf8("actionTruc_FTG"));
         MenuFichierQuitter = new QAction(Menu);
         MenuFichierQuitter->setObjectName(QString::fromUtf8("MenuFichierQuitter"));
+        MenuFichierQuitter->setEnabled(true);
         MenuFichierParDefaut = new QAction(Menu);
         MenuFichierParDefaut->setObjectName(QString::fromUtf8("MenuFichierParDefaut"));
         MenuAideOuvrirAide = new QAction(Menu);
@@ -118,46 +117,42 @@ public:
         MenuAideOuvrirCredits->setObjectName(QString::fromUtf8("MenuAideOuvrirCredits"));
         ZoneCentrale = new QWidget(Menu);
         ZoneCentrale->setObjectName(QString::fromUtf8("ZoneCentrale"));
-        LabelIcone = new QGraphicsView(ZoneCentrale);
-        LabelIcone->setObjectName(QString::fromUtf8("LabelIcone"));
-        LabelIcone->setGeometry(QRect(40, 40, 921, 101));
+        FondIcone = new QGraphicsView(ZoneCentrale);
+        FondIcone->setObjectName(QString::fromUtf8("FondIcone"));
+        FondIcone->setGeometry(QRect(40, 40, 921, 261));
         LabelChoisissez = new QLabel(ZoneCentrale);
         LabelChoisissez->setObjectName(QString::fromUtf8("LabelChoisissez"));
-        LabelChoisissez->setGeometry(QRect(280, 160, 441, 31));
+        LabelChoisissez->setGeometry(QRect(280, 320, 441, 31));
         QFont font;
         font.setPointSize(20);
         LabelChoisissez->setFont(font);
         LabelChoisissez->setAlignment(Qt::AlignCenter);
         FrameTempsJeu = new QFrame(ZoneCentrale);
         FrameTempsJeu->setObjectName(QString::fromUtf8("FrameTempsJeu"));
-        FrameTempsJeu->setGeometry(QRect(510, 210, 451, 151));
+        FrameTempsJeu->setGeometry(QRect(510, 370, 451, 81));
         FrameTempsJeu->setFrameShape(QFrame::StyledPanel);
         FrameTempsJeu->setFrameShadow(QFrame::Plain);
         LabelTempsJeuT = new QLabel(FrameTempsJeu);
         LabelTempsJeuT->setObjectName(QString::fromUtf8("LabelTempsJeuT"));
-        LabelTempsJeuT->setGeometry(QRect(20, 20, 411, 16));
+        LabelTempsJeuT->setGeometry(QRect(20, 10, 411, 16));
         QFont font1;
         font1.setPointSize(14);
         font1.setBold(true);
         font1.setWeight(75);
         LabelTempsJeuT->setFont(font1);
-        LabelTempsJeu = new QLabel(FrameTempsJeu);
-        LabelTempsJeu->setObjectName(QString::fromUtf8("LabelTempsJeu"));
-        LabelTempsJeu->setGeometry(QRect(20, 50, 151, 41));
-        QFont font2;
-        font2.setPointSize(14);
-        LabelTempsJeu->setFont(font2);
         LabelTempsJeuMinutes = new QLabel(FrameTempsJeu);
         LabelTempsJeuMinutes->setObjectName(QString::fromUtf8("LabelTempsJeuMinutes"));
-        LabelTempsJeuMinutes->setGeometry(QRect(120, 100, 101, 31));
+        LabelTempsJeuMinutes->setGeometry(QRect(120, 40, 101, 31));
+        QFont font2;
+        font2.setPointSize(14);
         LabelTempsJeuMinutes->setFont(font2);
         LabelTempsJeuSecondes = new QLabel(FrameTempsJeu);
         LabelTempsJeuSecondes->setObjectName(QString::fromUtf8("LabelTempsJeuSecondes"));
-        LabelTempsJeuSecondes->setGeometry(QRect(330, 100, 101, 31));
+        LabelTempsJeuSecondes->setGeometry(QRect(330, 40, 101, 31));
         LabelTempsJeuSecondes->setFont(font2);
         LabelTempsColon = new QLabel(FrameTempsJeu);
         LabelTempsColon->setObjectName(QString::fromUtf8("LabelTempsColon"));
-        LabelTempsColon->setGeometry(QRect(190, 100, 41, 31));
+        LabelTempsColon->setGeometry(QRect(190, 40, 41, 31));
         QFont font3;
         font3.setPointSize(16);
         font3.setBold(true);
@@ -166,7 +161,7 @@ public:
         LabelTempsColon->setAlignment(Qt::AlignCenter);
         SBoxMinutes = new QSpinBox(FrameTempsJeu);
         SBoxMinutes->setObjectName(QString::fromUtf8("SBoxMinutes"));
-        SBoxMinutes->setGeometry(QRect(20, 100, 91, 31));
+        SBoxMinutes->setGeometry(QRect(20, 40, 91, 31));
         QFont font4;
         font4.setPointSize(16);
         SBoxMinutes->setFont(font4);
@@ -176,14 +171,14 @@ public:
         SBoxMinutes->setValue(1);
         SBoxSecondes = new QSpinBox(FrameTempsJeu);
         SBoxSecondes->setObjectName(QString::fromUtf8("SBoxSecondes"));
-        SBoxSecondes->setGeometry(QRect(230, 100, 91, 31));
+        SBoxSecondes->setGeometry(QRect(230, 40, 91, 31));
         SBoxSecondes->setFont(font4);
         SBoxSecondes->setAlignment(Qt::AlignCenter);
         SBoxSecondes->setMaximum(50);
         SBoxSecondes->setSingleStep(10);
         FrameSource = new QFrame(ZoneCentrale);
         FrameSource->setObjectName(QString::fromUtf8("FrameSource"));
-        FrameSource->setGeometry(QRect(40, 210, 451, 321));
+        FrameSource->setGeometry(QRect(40, 370, 451, 321));
         FrameSource->setFrameShape(QFrame::StyledPanel);
         FrameSource->setFrameShadow(QFrame::Raised);
         LabelSource = new QLabel(FrameSource);
@@ -218,7 +213,7 @@ public:
         SBoxMotsFR->setFont(font2);
         SBoxMotsFR->setAlignment(Qt::AlignCenter);
         SBoxMotsFR->setMinimum(100);
-        SBoxMotsFR->setMaximum(10000);
+        SBoxMotsFR->setMaximum(5000);
         SBoxMotsFR->setSingleStep(100);
         SBoxMotsFR->setValue(100);
         LabelMotsFR1 = new QLabel(TabSpeciaux);
@@ -239,6 +234,7 @@ public:
         EntrySyll->setGeometry(QRect(240, 170, 81, 31));
         EntrySyll->setFont(font2);
         EntrySyll->setMaxLength(5);
+        EntrySyll->setAlignment(Qt::AlignCenter);
         TabSourceTexte->addTab(TabSpeciaux, QString());
         TabExemple = new QWidget();
         TabExemple->setObjectName(QString::fromUtf8("TabExemple"));
@@ -271,65 +267,76 @@ public:
         CollerTexteV = new QPlainTextEdit(TabPerso);
         CollerTexteV->setObjectName(QString::fromUtf8("CollerTexteV"));
         CollerTexteV->setGeometry(QRect(20, 40, 371, 131));
-        NonTexteR = new QRadioButton(TabPerso);
-        NonTexteR->setObjectName(QString::fromUtf8("NonTexteR"));
-        NonTexteR->setGeometry(QRect(20, 180, 151, 21));
+        CollerTexteV->setFont(font5);
+        NomTexteR = new QRadioButton(TabPerso);
+        NomTexteR->setObjectName(QString::fromUtf8("NomTexteR"));
+        NomTexteR->setGeometry(QRect(20, 180, 151, 21));
         NomTexteV = new QLineEdit(TabPerso);
         NomTexteV->setObjectName(QString::fromUtf8("NomTexteV"));
         NomTexteV->setGeometry(QRect(170, 180, 221, 21));
+        NomTexteV->setFont(font5);
+        NomTexteV->setAlignment(Qt::AlignCenter);
         TabSourceTexte->addTab(TabPerso, QString());
         FrameControles = new QFrame(ZoneCentrale);
         FrameControles->setObjectName(QString::fromUtf8("FrameControles"));
-        FrameControles->setGeometry(QRect(510, 380, 451, 151));
+        FrameControles->setGeometry(QRect(510, 580, 451, 111));
         FrameControles->setFrameShape(QFrame::StyledPanel);
         FrameControles->setFrameShadow(QFrame::Raised);
         LabelLancez = new QLabel(FrameControles);
         LabelLancez->setObjectName(QString::fromUtf8("LabelLancez"));
-        LabelLancez->setGeometry(QRect(20, 20, 411, 16));
+        LabelLancez->setGeometry(QRect(20, 10, 411, 16));
         LabelLancez->setFont(font1);
         BoutonCommencer = new QPushButton(FrameControles);
         BoutonCommencer->setObjectName(QString::fromUtf8("BoutonCommencer"));
-        BoutonCommencer->setGeometry(QRect(240, 70, 191, 61));
+        BoutonCommencer->setGeometry(QRect(240, 40, 191, 61));
         BoutonCommencer->setFont(font4);
         BoutonQuitter = new QPushButton(FrameControles);
         BoutonQuitter->setObjectName(QString::fromUtf8("BoutonQuitter"));
-        BoutonQuitter->setGeometry(QRect(20, 70, 191, 61));
+        BoutonQuitter->setGeometry(QRect(20, 40, 191, 61));
         BoutonQuitter->setFont(font4);
         BoutonAide = new QPushButton(FrameControles);
         BoutonAide->setObjectName(QString::fromUtf8("BoutonAide"));
-        BoutonAide->setGeometry(QRect(240, 20, 191, 31));
+        BoutonAide->setGeometry(QRect(240, 10, 191, 21));
         QFont font6;
         font6.setPointSize(12);
         BoutonAide->setFont(font6);
-        EntryParam = new QLineEdit(ZoneCentrale);
-        EntryParam->setObjectName(QString::fromUtf8("EntryParam"));
-        EntryParam->setGeometry(QRect(40, 540, 741, 21));
-        BoutonGenererParam = new QPushButton(ZoneCentrale);
-        BoutonGenererParam->setObjectName(QString::fromUtf8("BoutonGenererParam"));
-        BoutonGenererParam->setGeometry(QRect(790, 540, 81, 21));
-        BoutonAppliquerParam = new QPushButton(ZoneCentrale);
-        BoutonAppliquerParam->setObjectName(QString::fromUtf8("BoutonAppliquerParam"));
-        BoutonAppliquerParam->setGeometry(QRect(880, 540, 81, 21));
+        FramePseudo = new QFrame(ZoneCentrale);
+        FramePseudo->setObjectName(QString::fromUtf8("FramePseudo"));
+        FramePseudo->setGeometry(QRect(510, 460, 451, 111));
+        FramePseudo->setFrameShape(QFrame::StyledPanel);
+        FramePseudo->setFrameShadow(QFrame::Raised);
+        LabelPseudoT = new QLabel(FramePseudo);
+        LabelPseudoT->setObjectName(QString::fromUtf8("LabelPseudoT"));
+        LabelPseudoT->setGeometry(QRect(20, 10, 411, 21));
+        LabelPseudoT->setFont(font1);
+        LabelPseudo = new QLabel(FramePseudo);
+        LabelPseudo->setObjectName(QString::fromUtf8("LabelPseudo"));
+        LabelPseudo->setGeometry(QRect(20, 40, 111, 31));
+        LabelPseudo->setFont(font2);
+        EntryPseudo = new QLineEdit(FramePseudo);
+        EntryPseudo->setObjectName(QString::fromUtf8("EntryPseudo"));
+        EntryPseudo->setGeometry(QRect(110, 40, 321, 31));
+        QFont font7;
+        font7.setPointSize(14);
+        font7.setItalic(true);
+        EntryPseudo->setFont(font7);
+        EntryPseudo->setMaxLength(20);
+        EntryPseudo->setAlignment(Qt::AlignCenter);
+        CheckBoxNoOnline = new QCheckBox(FramePseudo);
+        CheckBoxNoOnline->setObjectName(QString::fromUtf8("CheckBoxNoOnline"));
+        CheckBoxNoOnline->setGeometry(QRect(20, 80, 411, 21));
+        QFont font8;
+        font8.setPointSize(10);
+        font8.setItalic(false);
+        CheckBoxNoOnline->setFont(font8);
+        LabelIcone = new QLabel(ZoneCentrale);
+        LabelIcone->setObjectName(QString::fromUtf8("LabelIcone"));
+        LabelIcone->setGeometry(QRect(40, 40, 921, 261));
         Menu->setCentralWidget(ZoneCentrale);
-        BarreMenu = new QMenuBar(Menu);
-        BarreMenu->setObjectName(QString::fromUtf8("BarreMenu"));
-        BarreMenu->setGeometry(QRect(0, 0, 1000, 20));
-        MenuFichier = new QMenu(BarreMenu);
-        MenuFichier->setObjectName(QString::fromUtf8("MenuFichier"));
-        MenuAide = new QMenu(BarreMenu);
-        MenuAide->setObjectName(QString::fromUtf8("MenuAide"));
-        Menu->setMenuBar(BarreMenu);
-
-        BarreMenu->addAction(MenuFichier->menuAction());
-        BarreMenu->addAction(MenuAide->menuAction());
-        MenuFichier->addAction(MenuFichierQuitter);
-        MenuFichier->addAction(MenuFichierParDefaut);
-        MenuAide->addAction(MenuAideOuvrirAide);
-        MenuAide->addAction(MenuAideOuvrirCredits);
 
         retranslateUi(Menu);
 
-        TabSourceTexte->setCurrentIndex(0);
+        TabSourceTexte->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(Menu);
@@ -348,7 +355,6 @@ public:
         MenuAideOuvrirCredits->setText(QApplication::translate("Menu", "Ouvrir &les cr\303\251dits (Ctrl + R)", 0, QApplication::UnicodeUTF8));
         LabelChoisissez->setText(QApplication::translate("Menu", "Choisissez vos options !", 0, QApplication::UnicodeUTF8));
         LabelTempsJeuT->setText(QApplication::translate("Menu", "2. Choisissez votre temps de jeu", 0, QApplication::UnicodeUTF8));
-        LabelTempsJeu->setText(QApplication::translate("Menu", "Temps de jeu :", 0, QApplication::UnicodeUTF8));
         LabelTempsJeuMinutes->setText(QApplication::translate("Menu", "Minutes", 0, QApplication::UnicodeUTF8));
         LabelTempsJeuSecondes->setText(QApplication::translate("Menu", "Secondes", 0, QApplication::UnicodeUTF8));
         LabelTempsColon->setText(QApplication::translate("Menu", ":", 0, QApplication::UnicodeUTF8));
@@ -366,17 +372,17 @@ public:
         LabelTexteEx2->setText(QApplication::translate("Menu", "Difficult\303\251 **", 0, QApplication::UnicodeUTF8));
         LabelTexteEx3->setText(QApplication::translate("Menu", "Difficult\303\251 ***", 0, QApplication::UnicodeUTF8));
         TabSourceTexte->setTabText(TabSourceTexte->indexOf(TabExemple), QApplication::translate("Menu", "Exemple de texte", 0, QApplication::UnicodeUTF8));
-        CollerTexteR->setText(QApplication::translate("Menu", "Texte (copier-coller) :", 0, QApplication::UnicodeUTF8));
-        NonTexteR->setText(QApplication::translate("Menu", "Nom du fichier :", 0, QApplication::UnicodeUTF8));
-        TabSourceTexte->setTabText(TabSourceTexte->indexOf(TabPerso), QApplication::translate("Menu", "Texte perso", 0, QApplication::UnicodeUTF8));
-        LabelLancez->setText(QApplication::translate("Menu", "3. Lancez-vous !", 0, QApplication::UnicodeUTF8));
+        CollerTexteR->setText(QApplication::translate("Menu", "&Texte (copier-coller) :", 0, QApplication::UnicodeUTF8));
+        NomTexteR->setText(QApplication::translate("Menu", "Nom du fichier :", 0, QApplication::UnicodeUTF8));
+        TabSourceTexte->setTabText(TabSourceTexte->indexOf(TabPerso), QApplication::translate("Menu", "Texte personnel", 0, QApplication::UnicodeUTF8));
+        LabelLancez->setText(QApplication::translate("Menu", "4. Lancez-vous !", 0, QApplication::UnicodeUTF8));
         BoutonCommencer->setText(QApplication::translate("Menu", "Commencer", 0, QApplication::UnicodeUTF8));
         BoutonQuitter->setText(QApplication::translate("Menu", "Quitter", 0, QApplication::UnicodeUTF8));
         BoutonAide->setText(QApplication::translate("Menu", "Aide et Cr\303\251dits", 0, QApplication::UnicodeUTF8));
-        BoutonGenererParam->setText(QApplication::translate("Menu", "G\303\251n\303\251rer", 0, QApplication::UnicodeUTF8));
-        BoutonAppliquerParam->setText(QApplication::translate("Menu", "Appliquer", 0, QApplication::UnicodeUTF8));
-        MenuFichier->setTitle(QApplication::translate("Menu", "Fic&hier", 0, QApplication::UnicodeUTF8));
-        MenuAide->setTitle(QApplication::translate("Menu", "A&ide", 0, QApplication::UnicodeUTF8));
+        LabelPseudoT->setText(QApplication::translate("Menu", "3. Choisissez votre pseudo (facultatif)", 0, QApplication::UnicodeUTF8));
+        LabelPseudo->setText(QApplication::translate("Menu", "Pseudo :", 0, QApplication::UnicodeUTF8));
+        CheckBoxNoOnline->setText(QApplication::translate("Menu", "Je ne veux pas envoyer mon score sur le serveur de score du jeu", 0, QApplication::UnicodeUTF8));
+        LabelIcone->setText(QString());
     } // retranslateUi
 
 };
