@@ -1603,7 +1603,7 @@ class ScoreApplication(QWidget, Ui_Score):
     #.passé en paramètres
     def determinerRang(self, score):
         rang = [{"pseudo": elt["pseudo"], "score": int(elt["score"])}
-                for elt in utilsRang.getRang()]
+                for elt in utilsRang.getRang("score/rang")]
         rang += {"pseudo": "Nul", "score": 0}
 
         rang_t = "-1"
@@ -1704,7 +1704,7 @@ class ScoreApplication(QWidget, Ui_Score):
         except:
             liste_A1 = []
 
-        rang = utilsRang.getRang()
+        rang = utilsRang.getRang("score/rang")
         for i in range(len(rang)):
             rang[i]["pseudo"] = "#" + rang[i]["pseudo"]
         #.On essaye
