@@ -17,30 +17,25 @@ from _ui.ui_menu import Ui_Menu
 from _ui.ui_module import Ui_Module
 from _ui.ui_fenetrebvn import Ui_FenetreBVN
 from _ui.ui_score import Ui_Score
-#.Modules standards
-from time import time, sleep, localtime
-from random import randint
-from os import system, popen
-from math import log
 
 #.##Imports simples
 
-#.Modules auxiliaires pour géner le cryptage
-import crypterScore
-import crypterTexte
-#.Module pour ouvrir des pages web
-import webbrowser
-import urllib
 #.Modules standards
-import sys
+import time
+import random
 import os
+import log
+import sys
 import pickle
 import binascii
 import re
 import unicodedata
-#.Modules nécessaires à la production de l'éxecutable
-import atexit
-import platform
+#.Modules auxiliaires pour géner le cryptage
+import utilsScore
+import utilsTexte
+import utilsRang
+#.Module pour ouvrir des pages web
+import webbrowser
 
 #.#Déclaration des classes
 
@@ -113,14 +108,14 @@ class FenetreBVNApplication(QMainWindow, Ui_FenetreBVN):
     def syncDB(self):
         #.On désactive le bouton continuer
         self.BoutonContinuer.setEnabled(False)
-        #.On créé un thread `ThreadSyncDB`
-        self.SyncDB = crypterScore.ThreadSyncDB()
-        #.On connecte la fin du thread aux méthodes correspondantes
-        self.SyncDB.finished.connect(self.SyncDB.deleteLater)
-        self.SyncDB.finished.connect(self.handleSyncDBFini)
         #.On affiche dans la boîte d'état les informations
         self.LabelEtat.setText(u"- Synchronisation des scores en cours - " +
                                u"Veuillez patienter - ")
+        #.On créé un thread `ThreadSyncDB`
+        self.SyncDB = utilsScore.ThreadSyncDB()
+        #.On connecte la fin du thread aux méthodes correspondantes
+        self.SyncDB.finished.connect(self.SyncDB.deleteLater)
+        self.SyncDB.finished.connect(self.handleSyncDBFini)
         #.On lance la synchronisation
         self.SyncDB.start()
 
@@ -151,12 +146,12 @@ class MenuApplication(QMainWindow, Ui_Menu):
         self.LabelIcone.setPixmap(QPixmap("img/logo2.png"))
         #.On appelle la méthode `majTextesEx` pour mettre à jour les titres 
         #.des textes d'exemple
+        self.pseudo = ""
+        self.param = []
         self.majTextesEx()
+        self.pseudoChange()
         #.On définit l'onglet actuel comme le second (textes d'exemple)
         self.tab_actuel = 1
-        #.On définit les attributs
-        self.param = []
-        self.pseudo = ""
         #.On connecte les boutons à leurs slots
         self.BoutonCommencer.clicked.connect(self.commencer)
         self.BoutonQuitter.clicked.connect(self.quitter)
@@ -196,15 +191,18 @@ class MenuApplication(QMainWindow, Ui_Menu):
     def majTextesEx(self):
         #.On ouvre les 3 textes, et on ne conserve que la première ligne sans 
         #.le `"#"`, qui correspond au titre
-        with open("txt/exemple1_e.txt", "r") as fichier:
-            texte = crypterTexte.decrypterTexte(fichier.read())
-            titre1 = texte.split("\n")[0][1:]
-        with open("txt/exemple2_e.txt", "r") as fichier:
-            texte = crypterTexte.decrypterTexte(fichier.read())
-            titre2 = texte.split("\n")[0][1:]
-        with open("txt/exemple3_e.txt", "r") as fichier:
-            texte = crypterTexte.decrypterTexte(fichier.read())
-            titre3 = texte.split("\n")[0][1:]
+        fichier = open("txt/exemple1_e.txt", "r")
+        texte = crypterTexte.decrypterTexte(fichier.read())
+        fichier.close()
+        titre1 = texte.split("\n")[0][1:]
+        fichier = open("txt/exemple2_e.txt", "r")
+        texte = crypterTexte.decrypterTexte(fichier.read())
+        fichier.close()
+        titre2 = texte.split("\n")[0][1:]
+        fichier = open("txt/exemple3_e.txt", "r")
+        texte = crypterTexte.decrypterTexte(fichier.read())
+        fichier.close()
+        titre3 = texte.split("\n")[0][1:]
         #.On affiche les nouveaux titres dans le menu
         self.LabelTexteEx1R.setText(titre1.decode("utf-8"))
         self.LabelTexteEx2R.setText(titre2.decode("utf-8"))
@@ -254,7 +252,7 @@ class MenuApplication(QMainWindow, Ui_Menu):
     #.###Méthode (slot) `pseudoChange`
     #.Méthode permettant de cocher automatiquement ou non la case "Ne pas 
     #.envoyer le score en ligne" en fonction du pseudo saisi
-    @pyqtSlot()
+    @pyqtSlot(str)
     def pseudoChange(self, pseudo):
         #.On récupère et on normalise le pseudo
         pseudo = unicode(pseudo).encode("utf-8").strip()
@@ -282,8 +280,8 @@ class MenuApplication(QMainWindow, Ui_Menu):
         #.On remplace ensuite les espaces multiples par un espace simple
         texte = (re.sub(r" {2,}", r" ", texte.strip()))
         #.On recoupe le texte si il est trop long
-        if len(texte) > 4096:
-            texte = texte[:4096]
+        if len(texte) > 10000:
+            texte = texte[:10000]
         #.On renvoie le texte modifié
         return texte
 
@@ -419,7 +417,8 @@ class MenuApplication(QMainWindow, Ui_Menu):
 
         #.On met à jour l'attribut-liste `param` avec les nouvelles valeurs 
         #.du temps et du mode de texte
-        self.param = [temps, texte_mode, envoyer_en_ligne]
+        param = [temps, texte_mode, envoyer_en_ligne]
+        self.param = param
 
     #.###Méthode `getPseudo`
     #.Méthode permettant de récupérer le pseudo saisi par l'utilisateur
@@ -428,23 +427,22 @@ class MenuApplication(QMainWindow, Ui_Menu):
         pseudo = unicode(self.EntryPseudo.text()).encode("utf-8").strip()
         #.Si aucun pseudo n'est entré, on choisit `"Anonyme"`
         if not pseudo.strip() or pseudo.strip().lower() == "anonyme":
-            try:
-                with open("score/instance.db", "r") as fichier_instance:
-                    instance_brut = fichier_instance.readlines()
-                instance = int(instance_brut[0][:-1]) + 1
-                if instance > 1000:
-                    instance -= 1000
-            except:
-                instance = randint(1, 999)
+            fichier_instance = open("score/instance.db", "r")
+            instance_brut = fichier_instance.readlines()
+            fichier_instance.close()
+            instance = int(instance_brut[0][:-1]) + 1
+            if instance > 100000:
+                instance -= 100000
 
             pseudo = "Joueur {}".format(str(instance))
-            with open("score/instance.db", "w") as fichier_instance:
-                fichier_instance.write(str(instance))
+
+            fichier_instance = open("score/instance.db", "w")
+            fichier_instance.write(str(instance))
+            fichier_instance.close()
 
         #.Si le pseudo est trop long, on le recoupe à 20 caractères
         if len(pseudo) > 20:
             pseudo = pseudo[:20]
-        #.On met à jour la valeur de l'attribut `pseudo`
         self.pseudo = pseudo
 
     #.###Méthode (slot) `commencer`
@@ -452,9 +450,9 @@ class MenuApplication(QMainWindow, Ui_Menu):
     #.de *Module*
     @pyqtSlot()
     def commencer(self):
-        #.On récupère les paramètres et le pseudo
-        self.getPseudo()
         self.getParam()
+        self.getPseudo()
+        #.On récupère les paramètres et le pseudo
         #.On créé une instance de `ModuleApplication`, en passant les 
         #.paramètres et le pseudo au constructeur
         self.Module = ModuleApplication(self.param, self.pseudo)
@@ -492,7 +490,10 @@ class MenuApplication(QMainWindow, Ui_Menu):
             #.On réaffiche le menu
             self.show()
             #.On décoche ne pas envoyer en ligne
-            self.CheckBoxNoOnline.setChecked(False)
+            self.pseudoChange()
+            if self.CheckBoxNoOnline.isEnabled():
+                if not self.CheckBoxNoOnline.isChecked():
+                    self.CheckBoxNoOnline.setChecked(False)
 
     #.###Méthode (slot) `tabChange`
     #.Méthode permettant de gérer le changement d'onglet pour le choix du 
@@ -665,7 +666,6 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.`tempsChange` pour régler le GUI sur la position de départ
         self.updateTexteLabel()
         self.tempsChange(self.temps_choisi)
-        self.meilleursScores()
 
         #.On fixe la police des labels en police à chasse fixe (monospace)  
         #.Cela permet d'éviter l'erreur avec Windows qui ne reconnait pas la 
@@ -708,6 +708,22 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.pas à cliquer dessus)
         self.EntryTapeCentre.setFocus()
 
+        self.syncDB()
+        self.meilleursScores()
+
+    #.###Méthode spéciale `keyPressEvent`
+    def keyPressEvent(self, event):
+        #.Si l'événement correspond à une touche pressée
+        if type(event) == QKeyEvent:
+            #.Si la touche pressée est <Escape>
+            if event.key() == Qt.Key_Escape:
+                #.On appelle la méthode `quitterM` pour quitter
+                self.quitterM()
+            #.Si la touche pressée est <Return>
+            elif event.key() == Qt.Key_Return:
+                #.On appelle la méthode `togglePauseM` pour mettre en pause
+                self.togglePauseM()
+
     #.###Méthode `meilleursScores`
     #.Méthode permettant d'afficher les meilleurs scores dans le tableau en 
     #.bas à droite
@@ -728,8 +744,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
             #.On ouvre le premier fichier de la DB locale
             fichier_A0 = open("score/scores_A0.db", "r")
             #.On récupère le contenu avec un pickler
-            mon_pickler = pickle.Unpickler(fichier_A0)
-            liste_A0 = mon_pickler.load()
+            liste_A0 = pickle.load(fichier_A0)
             fichier_A0.close()
         except:
             liste_A0 = []
@@ -738,8 +753,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
             #.On ouvre le second fichier de la DB locale
             fichier_A1 = open("score/scores_A1.db", "r")
             #.On récupère le contenu avec un pickler
-            mon_pickler = pickle.Unpickler(fichier_A1)
-            liste_A1 = mon_pickler.load()
+            liste_A1 = pickle.load(fichier_A1)
             fichier_A1.close()
         except:
             liste_A1 = []
@@ -848,19 +862,6 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.On retourne le mode de texte enhanced
         return mode_texte_enh
 
-    #.###Méthode spéciale `keyPressEvent`
-    def keyPressEvent(self, event):
-        #.Si l'événement correspond à une touche pressée
-        if type(event) == QKeyEvent:
-            #.Si la touche pressée est <Escape>
-            if event.key() == Qt.Key_Escape:
-                #.On appelle la méthode `quitterM` pour quitter
-                self.quitterM()
-            #.Si la touche pressée est <Return>
-            elif event.key() == Qt.Key_Return:
-                #.On appelle la méthode `togglePauseM` pour mettre en pause
-                self.togglePauseM()
-
     #.###Méthode `genererTexte`
     #.Méthode permettant de génerer le texte en fonction du mode de texte 
     #.choisi
@@ -899,8 +900,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
         fichier_mots_brut = open("txt/dictionnaire_freq_e.txt", "r")
         #.On le lit, le décrypte et on le normalise, puis on le ferme
         fichier_mots = crypterTexte.decrypterTexte(fichier_mots_brut.read())
-        fichier_mots = fichier_mots.split("\n")
         fichier_mots_brut.close()
+        fichier_mots = fichier_mots.split("\n")
         #.On recoupe la liste de mots aux `nb` premiers mots
         liste_mots = [elt for elt in fichier_mots if elt][:nb]
         chaine = ""
@@ -919,8 +920,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
         fichier_mots_brut = open("txt/dictionnaire_syll_e.txt", "r")
         #.On le lit, le décrypte, et on le normalise, puis on le ferme
         fichier_mots = crypterTexte.decrypterTexte(fichier_mots_brut.read())
-        fichier_mots = fichier_mots.split("\n")
         fichier_mots_brut.close()
+        fichier_mots = fichier_mots.split("\n")
         #.On ne garde dans la liste que les mots contenant la syllabe `syll`
         liste_mots = [elt for elt in fichier_mots if elt and (syll in elt)]
         chaine = ""
@@ -939,8 +940,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
         exec("fichier_brut = open(\"txt/exemple{}_e.txt\", \"r\")".format(no))
         #.On lit le fichier, on le décrypte, et on le normalise
         fichier = crypterTexte.decrypterTexte(fichier_brut.read())
-        fichier = fichier.split("\n")
         fichier_brut.close()
+        fichier = fichier.split("\n")
         texte = ""
         #.On ajoute les lignes que si elles ne portent pas le signe `"#"`
         for ligne in fichier:
@@ -1385,34 +1386,9 @@ class ModuleApplication(QMainWindow, Ui_Module):
             ss = "0" + ss
         #.On définit le mode de texte enhanced en fonction du mode de texte 
         #.choisi
-        mds = self.mode_texte.split("::")
-        #.Si le mode choisi est *Texte d'exemple*
-        if mds[0] == "expl":
-            mode_texte_enh = "Texte d'exemple {}"\
-                .format(mds[1])
-        #.Si le mode choisi est *Syll*
-        elif mds[0] == "syll":
-            mode_texte_enh = "Mots avec la syllabe -{}"\
-                .format(mds[1])
-        #.Si le mode choisi est *Mots FR*
-        elif mds[0] == "mots_fr":
-            mode_texte_enh = "Les {} mots les plus courants"\
-                .format(mds[1])
-        #.Si le mode choisi est *Texte personnalisé*
-        elif mds[0] == "perso":
-            #.Si le mode choisi est *Texte par nom*
-            if mds[1] == "nom":
-                mode_texte_enh = "Texte personnalisé : \"{}\""\
-                    .format(mds[2][3:-3].split("/")[-1])
-            #.Si le mode choisi est *Texte copié-collé*
-            elif mds[1] == "entier":
-                mode_texte_enh = "Texte personnalisé : {}..."\
-                    .format(mds[2][3:-3][:min(10, len(mds[2][3:-3]))])
-        #.Sinon (si aucun mode ne correspond)
-        else:
-            mode_texte_enh = "Inconnu"
+        mode_texte_enh = self.modeTexteEnh()
         #.On définit le dictionnaire de score
-        self.dico_score = {"afficher": self.envoyer_en_ligne,
+        self.dico_score = {"aff": self.envoyer_en_ligne,
                            "pseudo": self.pseudo,
                            "score": int(round(self.score, 0)),
                            "cpm": round(self.car_min, 1),
@@ -1420,13 +1396,17 @@ class ModuleApplication(QMainWindow, Ui_Module):
                            "temps": int(self.temps_choisi),
                            "date": "{}-{}-{}".format(AAAA, MM, JJ),
                            "heure": "{}:{}:{}".format(hh, mm, ss),
-                           "texte_mode_enh": mode_texte_enh,
-                           "envoyer_en_ligne": self.envoyer_en_ligne}
+                           "texte_mode_enh": mode_texte_enh}
+        utilsScore.ajouterScoreAttente(self.dico_score)
+        self.syncDB()
 
+        # Utiliser un bool `afficherfenetrescoreaprès`
+
+    def syncDB(self):
         #.On désactive le bouton commencer
         self.BoutonStartPause.setEnabled(False)
         #.On créé un thread `ThreadSyncDB`
-        self.SyncDB = crypterScore.ThreadSyncDB(self.dico_score)
+        self.SyncDB = utilsScore.ThreadSyncDB(self.dico_score)
         #.On connecte la fin du thread aux méthodes correspondantes
         self.SyncDB.finished.connect(self.SyncDB.deleteLater)
         self.SyncDB.finished.connect(self.handleSyncDBFini)
@@ -1447,7 +1427,8 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.BoutonStartPause.setEnabled(True)
         #.Enfin, on appelle la méthode `affFenetreScore` pour afficher la 
         #.fenêtre de scores
-        self.affFenetreScore(self.dico_score)
+        if self.jeton_temps_finiM:
+            self.affFenetreScore(self.dico_score)
 
     #.###Méthode `affFenetreScore`
     #.Méthode appelée quand la partie est terminée pour ouvrir la fenêtre de 
@@ -1621,29 +1602,20 @@ class ScoreApplication(QWidget, Ui_Score):
     #.Méthode permettant de déterminer le rang du joueur en fonction du score 
     #.passé en paramètres
     def determinerRang(self, score):
-        #.On regarde dans quelle tranche se trouve le joueur
-        if score > 5000:
-            rang = "Big-Bang"
-        elif score <= 5000 and score > 3000:
-            rang = "Trou-Noir"
-        elif score <= 3000 and score > 2000:
-            rang = "SuperNova"
-        elif score <= 2000 and score > 1500:
-            rang = "Dieu"
-        elif score <= 1500 and score > 1000:
-            rang = "Demi-Dieu"
-        elif score <= 1000 and score > 750:
-            rang = "Champion"
-        elif score <= 750 and score > 500:
-            rang = "Archer"
-        elif score <= 500 and score > 250:
-            rang = "Guerrier"
-        elif score <= 250 and score > 100:
-            rang = "Novice"
-        else:
-            rang = "Newbie"
+        rang = [{"pseudo": elt["pseudo"], "score": int(elt["score"])}
+                for elt in utilsRang.getRang()]
+        rang += {"pseudo": "Nul", "score": 0}
+
+        rang_t = "-1"
+
+        for i in range(len(rang) - 1):
+            if score < rang[i]["score"] and score >= rang[i + 1]["score"]:
+                rang_t = rang[i]["pseudo"]
+        if rang_t == "-1":
+            rang_t = "Inconnu"
+
         #.Et on retourne le rang correspondant
-        return rang
+        return rang_t
 
     #.###Méthode (slot) `ouvrirPageScore`
     #.Méthode appelée lorsque l'on appuie sur le bouton `BoutonScoresLigne`, 
@@ -1718,8 +1690,7 @@ class ScoreApplication(QWidget, Ui_Score):
             #.On ouvre le premier fichier de la DB locale
             fichier_A0 = open("score/scores_A0.db", "r")
             #.On récupère le contenu avec un pickler
-            mon_pickler = pickle.Unpickler(fichier_A0)
-            liste_A0 = mon_pickler.load()
+            liste_A0 = pickle.load(fichier_A0)
             fichier_A0.close()
         except:
             liste_A0 = []
@@ -1728,14 +1699,17 @@ class ScoreApplication(QWidget, Ui_Score):
             #.On ouvre le second fichier de la DB locale
             fichier_A1 = open("score/scores_A1.db", "r")
             #.On récupère le contenu avec un pickler
-            mon_pickler = pickle.Unpickler(fichier_A1)
-            liste_A1 = mon_pickler.load()
+            liste_A1 = pickle.load(fichier_A1)
             fichier_A1.close()
         except:
             liste_A1 = []
+
+        rang = utilsRang.getRang()
+        for i in range(len(rang)):
+            rang[i]["pseudo"] = "#" + rang[i]["pseudo"]
         #.On essaye
         try:
-            liste = sorted(liste_A0 + liste_A1,
+            liste = sorted(liste_A0 + liste_A1 + rang,
                            key=lambda dico: dico["score"],
                            reverse=True)
         except:
