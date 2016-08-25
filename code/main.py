@@ -24,7 +24,7 @@ from _ui.ui_score import Ui_Score
 import time
 import random
 import os
-import log
+import math
 import sys
 import pickle
 import binascii
@@ -192,15 +192,15 @@ class MenuApplication(QMainWindow, Ui_Menu):
         #.On ouvre les 3 textes, et on ne conserve que la première ligne sans 
         #.le `"#"`, qui correspond au titre
         fichier = open("txt/exemple1_e.txt", "r")
-        texte = crypterTexte.decrypterTexte(fichier.read())
+        texte = utilsTexte.decrypterTexte(fichier.read())
         fichier.close()
         titre1 = texte.split("\n")[0][1:]
         fichier = open("txt/exemple2_e.txt", "r")
-        texte = crypterTexte.decrypterTexte(fichier.read())
+        texte = utilsTexte.decrypterTexte(fichier.read())
         fichier.close()
         titre2 = texte.split("\n")[0][1:]
         fichier = open("txt/exemple3_e.txt", "r")
-        texte = crypterTexte.decrypterTexte(fichier.read())
+        texte = utilsTexte.decrypterTexte(fichier.read())
         fichier.close()
         titre3 = texte.split("\n")[0][1:]
         #.On affiche les nouveaux titres dans le menu
@@ -252,10 +252,10 @@ class MenuApplication(QMainWindow, Ui_Menu):
     #.###Méthode (slot) `pseudoChange`
     #.Méthode permettant de cocher automatiquement ou non la case "Ne pas 
     #.envoyer le score en ligne" en fonction du pseudo saisi
-    @pyqtSlot(str)
-    def pseudoChange(self, pseudo):
+    @pyqtSlot()
+    def pseudoChange(self):
         #.On récupère et on normalise le pseudo
-        pseudo = unicode(pseudo).encode("utf-8").strip()
+        pseudo = unicode(self.EntryPseudo.text()).encode("utf-8").strip()
         #.Si le pseudo est vide, admin ou anonyme, on coche la case "Ne pas 
         #.envoyer en ligne" et on disable la checkbox
         if not pseudo or pseudo.lower() == "admin" or\
@@ -266,7 +266,7 @@ class MenuApplication(QMainWindow, Ui_Menu):
         else:
             #.On vérifie que la checkbox est enabled.  Si elle ne l'est pas, 
             #.on l'active et on décoche la case
-            if not self.CheckBoxNoOnline.checkState.enabled():
+            if not self.CheckBoxNoOnline.isEnabled():
                 self.CheckBoxNoOnline.setEnabled(True)
                 self.CheckBoxNoOnline.setChecked(False)
 
@@ -348,7 +348,7 @@ class MenuApplication(QMainWindow, Ui_Menu):
                 with open("txt/dictionnaire_syll_e.txt", "r") as \
                         fichier_mots_brut:
                     fichier_mots =\
-                        crypterTexte.decrypterTexte(fichier_mots_brut.read())
+                        utilsTexte.decrypterTexte(fichier_mots_brut.read())
                 fichier_mots = fichier_mots.split("\n")
                 liste_mots = [elt for elt in fichier_mots if elt and
                               (syll in elt)]
@@ -899,7 +899,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.On ouvre le dictionnaire des mots triés par fréquence
         fichier_mots_brut = open("txt/dictionnaire_freq_e.txt", "r")
         #.On le lit, le décrypte et on le normalise, puis on le ferme
-        fichier_mots = crypterTexte.decrypterTexte(fichier_mots_brut.read())
+        fichier_mots = utilsTexte.decrypterTexte(fichier_mots_brut.read())
         fichier_mots_brut.close()
         fichier_mots = fichier_mots.split("\n")
         #.On recoupe la liste de mots aux `nb` premiers mots
@@ -919,7 +919,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.On ouvre le dictionnaire de mots
         fichier_mots_brut = open("txt/dictionnaire_syll_e.txt", "r")
         #.On le lit, le décrypte, et on le normalise, puis on le ferme
-        fichier_mots = crypterTexte.decrypterTexte(fichier_mots_brut.read())
+        fichier_mots = utilsTexte.decrypterTexte(fichier_mots_brut.read())
         fichier_mots_brut.close()
         fichier_mots = fichier_mots.split("\n")
         #.On ne garde dans la liste que les mots contenant la syllabe `syll`
@@ -939,7 +939,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.passé en paramètre
         exec("fichier_brut = open(\"txt/exemple{}_e.txt\", \"r\")".format(no))
         #.On lit le fichier, on le décrypte, et on le normalise
-        fichier = crypterTexte.decrypterTexte(fichier_brut.read())
+        fichier = utilsTexte.decrypterTexte(fichier_brut.read())
         fichier_brut.close()
         fichier = fichier.split("\n")
         texte = ""
@@ -1348,7 +1348,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
             inv_de_err_plus_un = 1 / (nombre_erreur_pour_car + 1)
             #.On calcule le coefficient qui permet de remettre le score sur 
             #.une même base en fonction du temps choisi
-            ln_tps_plus_C_div_tps = (log(self.temps_choisi) +
+            ln_tps_plus_C_div_tps = (math.log(self.temps_choisi) +
                                      self.C_TEMPS) / self.temps_choisi
 
             #.On calcule le score final et on l'affiche
@@ -1406,7 +1406,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.On désactive le bouton commencer
         self.BoutonStartPause.setEnabled(False)
         #.On créé un thread `ThreadSyncDB`
-        self.SyncDB = utilsScore.ThreadSyncDB(self.dico_score)
+        self.SyncDB = utilsScore.ThreadSyncDB()
         #.On connecte la fin du thread aux méthodes correspondantes
         self.SyncDB.finished.connect(self.SyncDB.deleteLater)
         self.SyncDB.finished.connect(self.handleSyncDBFini)

@@ -98,7 +98,7 @@ class ThreadSyncDB(QThread):
     def __init__(self):
         #.On hérite de la méthode `__init__` de la classe parente (`QThread`)
         QThread.__init__(self)
-        self.debug = False
+        self.debug = True
 
     #.###Méthode principale `run`
     #.Cette méthode correspond au corps du thread, qui est appelée lors du 
@@ -153,9 +153,12 @@ class ThreadSyncDB(QThread):
 
             #.On récupère la nouvelle DB
 
-            db = urllib\
-                .urlopen("http://tbagrel1.pythonanywhere.com/app1/getDB")\
-                .read()
+            try:
+                db = urllib\
+                    .urlopen("http://tbagrel1.pythonanywhere.com/app1/getDB")\
+                    .read()
+            except:
+                db = None
             if db and db != "\n":
                 print_d(db)
                 db = binascii.a2b_hex(db)
