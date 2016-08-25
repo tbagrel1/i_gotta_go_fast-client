@@ -106,8 +106,16 @@ class ThreadSyncDB(QThread):
     def run(self):
 
         try:
+            self.print_d("try")
+            checksum = hashlib.md5(open(sys.argv[0], "rb").read()).hexdigest()
+            self.print_d(checksum)
+            checksum = binascii.b2a_hex(checksum)
+            self.print_d(checksum)
+            self.print_d(binascii.b2a_hex("90bbbcaa5a836045c40a064ee55b75fb"))
             test_co = urllib.urlopen("http://tbagrel1.pythonanywhere.com/" +
-                                     "app1/testConnection").read()
+                                     "app1/testConnection?checksum={}"
+                                     .format(checksum)).read()
+            self.print_d(test_co)
             if test_co != "OK":
                 raise ChecksumError
         except:
@@ -143,7 +151,10 @@ class ThreadSyncDB(QThread):
                 self.print_d("Aucun score à envoyer")
 
             #.On efface les scores en attente
-            os.remove("score/scores_AX.db")
+            try:
+                os.remove("score/scores_AX.db")
+            except:
+                pass
 
             if erreur:
                 self.print_d("Une ou plusieurs erreurs à réécrire")
@@ -160,11 +171,11 @@ class ThreadSyncDB(QThread):
             except:
                 db = None
             if db and db != "\n":
-                print_d(db)
+                self.print_d(db)
                 db = binascii.a2b_hex(db)
-                print_d(db)
+                self.print_d(db)
                 db = pickle.loads(db)
-                print_d(db)
+                self.print_d(db)
                 fichier_score_A1 = open("score/scores_A1.db", "w")
                 pickle.dump(db, fichier_score_A1)
                 fichier_score_A1.close()

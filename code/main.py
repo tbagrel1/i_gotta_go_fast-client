@@ -908,7 +908,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.On génere 25 mots aléatoire compris dans les `nb` mots de la langue 
         #.française orales les plus courants
         for i in range(25):
-            j = randint(0, nb - 1)
+            j = random.randint(0, nb - 1)
             chaine += (liste_mots[j] + " ")
         #.On retourne la liste générée
         return chaine
@@ -1124,7 +1124,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
             self.LabelEtat.setText(u"- Partie en cours -")
             self.jeton_pauseM = False
             #.Pour le premier caractère, on prend un temps arbitraire de 0,5 s
-            self.temps_score_precedant = time() - 0.5
+            self.temps_score_precedant = time.time() - 0.5
             #.On lance ensuite le timer pour la première fois ;  
             self.Timer.start()
             #.On change le texte du bouton start/pause ;  
@@ -1336,7 +1336,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
                 coeff = 1.6
             #.On calcule le temps écoulé et on calcule l'inverse du temps mis 
             #.pour taper le caractère
-            temps_score = time()
+            temps_score = time.time()
             temps_ecoule_l = temps_score - self.temps_score_precedant
             inv_temps_pour_car = 1 / (temps_ecoule_l)
             self.temps_score_precedant = temps_score
@@ -1363,7 +1363,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
     #.terminée
     def gererScore(self):
         #.On récupère la date et l'heure
-        dh = localtime()
+        dh = time.localtime()
         #.Pour chaque composante de la date et de l'heure, on place 
         #.éventuellement des `"0"` devant
         AAAA = str(dh[0])
@@ -1484,13 +1484,13 @@ class ThreadTimer(QThread):
     #.`start()`, et dont la fin correspond à la fin de l'execution du thread
     def run(self):
         #.On prend le temps lors du lancement et on désactive la pause
-        self.temps_depart = time()
+        self.temps_depart = time.time()
         self.jeton_pause = False
         #.Tant que `jeton_quitter` est `False` (tant que l'on ne veut pas
         #.quitter)  
         #.On calcule le temps restant
         while not self.jeton_quitter:
-            self.temps_inter = time()
+            self.temps_inter = time.time()
             self.temps_ecoule = self.temps_inter - self.temps_depart
             self.temps_restant = self.temps_choisi - self.temps_ecoule
             #.Si il est négatif, on le met à `0`, on met une dernière fois à
@@ -1511,14 +1511,14 @@ class ThreadTimer(QThread):
             #.Ensuite, tant que la pause est activée et que le timer ne doit 
             #.pas être quitté, le programme hiberne par pas de 0,01 s
             if self.jeton_pause:
-                self.temps_debut_pause = time()
+                self.temps_debut_pause = time.time()
                 while self.jeton_pause and not self.jeton_quitter:
                     sleep(0.01)
                 #.Quand on sort de la boucle (pause terminée), on prend le
                 #.temps de fin de pause, on calcule le temps passé en pause,
                 #.et on ajoute cette durée au temps de lancement
                 #.(`temps_depart`)
-                self.temps_fin_pause = time()
+                self.temps_fin_pause = time.time()
                 self.temps_pause_ecoule = (self.temps_fin_pause -
                                            self.temps_debut_pause)
                 self.temps_depart += self.temps_pause_ecoule
