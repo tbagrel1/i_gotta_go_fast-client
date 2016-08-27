@@ -427,12 +427,15 @@ class MenuApplication(QMainWindow, Ui_Menu):
         pseudo = unicode(self.EntryPseudo.text()).encode("utf-8").strip()
         #.Si aucun pseudo n'est entré, on choisit `"Anonyme"`
         if not pseudo.strip() or pseudo.strip().lower() == "anonyme":
-            fichier_instance = open("score/instance.db", "r")
-            instance_brut = fichier_instance.readlines()
-            fichier_instance.close()
-            instance = int(instance_brut[0][:-1]) + 1
-            if instance > 100000:
-                instance -= 100000
+            try:
+                fichier_instance = open("score/instance.db", "r")
+                instance_brut = fichier_instance.readlines()
+                fichier_instance.close()
+                instance = int(instance_brut[0]) + 1
+                if instance > 100000:
+                    instance -= 100000
+            except:
+                instance = 1
 
             pseudo = "Joueur {}".format(str(instance))
 
@@ -450,8 +453,8 @@ class MenuApplication(QMainWindow, Ui_Menu):
     #.de *Module*
     @pyqtSlot()
     def commencer(self):
-        self.getParam()
         self.getPseudo()
+        self.getParam()
         #.On récupère les paramètres et le pseudo
         #.On créé une instance de `ModuleApplication`, en passant les 
         #.paramètres et le pseudo au constructeur
@@ -708,7 +711,6 @@ class ModuleApplication(QMainWindow, Ui_Module):
         #.pas à cliquer dessus)
         self.EntryTapeCentre.setFocus()
 
-        self.syncDB()
         self.meilleursScores()
 
     #.###Méthode spéciale `keyPressEvent`
@@ -927,7 +929,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         chaine = ""
         #.On génère 25 mots parmi ceux contenant la syllabe `syll`
         for i in range(25):
-            j = randint(0, len(liste_mots) - 1)
+            j = random.randint(0, len(liste_mots) - 1)
             chaine += (liste_mots[j] + " ")
         #.On retourne la liste générée
         return chaine
@@ -1118,17 +1120,19 @@ class ModuleApplication(QMainWindow, Ui_Module):
             self.recommencer()
         #.Si le temps n'est pas fini, et que c'est le premier lancement :  
         elif self.premier_lancement_timer:
-            #.On désactive la pause (`jeton_pauseM`) et le drapeau de premier 
+            #.On désactive la pause (`jeton_pauseM`) et le drapeau de 
+            #.premier 
             #.lancement (`premier_lancement_timer`)
             self.premier_lancement_timer = False
             self.LabelEtat.setText(u"- Partie en cours -")
             self.jeton_pauseM = False
-            #.Pour le premier caractère, on prend un temps arbitraire de 0,5 s
+            #.Pour le premier caractère, on prend un temps arbitraire de 
+            #.0,5 s
             self.temps_score_precedant = time.time() - 0.5
             #.On lance ensuite le timer pour la première fois ;  
             self.Timer.start()
             #.On change le texte du bouton start/pause ;  
-            #.On active les différents labels désactivés lors du lancement ;
+            #.On active les différents labels désactivés lors du lancement 
             #.Et on active le focus sur la boîte de texte
             self.BoutonStartPause.setText(u"Pause")
             self.LabelTexteDroite.setEnabled(True)
@@ -1427,8 +1431,7 @@ class ModuleApplication(QMainWindow, Ui_Module):
         self.BoutonStartPause.setEnabled(True)
         #.Enfin, on appelle la méthode `affFenetreScore` pour afficher la 
         #.fenêtre de scores
-        if self.jeton_temps_finiM:
-            self.affFenetreScore(self.dico_score)
+        self.affFenetreScore(self.dico_score)
 
     #.###Méthode `affFenetreScore`
     #.Méthode appelée quand la partie est terminée pour ouvrir la fenêtre de 
@@ -1506,14 +1509,14 @@ class ThreadTimer(QThread):
             #.fait hiberner le programme pendant `0,01` s
             else:
                 self.temps_change_signal.emit(self.temps_restant)
-                sleep(0.01)
+                time.sleep(0.01)
             #.Si la pause est activée, on prend le temps de début de pause  
             #.Ensuite, tant que la pause est activée et que le timer ne doit 
             #.pas être quitté, le programme hiberne par pas de 0,01 s
             if self.jeton_pause:
                 self.temps_debut_pause = time.time()
                 while self.jeton_pause and not self.jeton_quitter:
-                    sleep(0.01)
+                    time.sleep(0.01)
                 #.Quand on sort de la boucle (pause terminée), on prend le
                 #.temps de fin de pause, on calcule le temps passé en pause,
                 #.et on ajoute cette durée au temps de lancement
@@ -1577,7 +1580,7 @@ class ScoreApplication(QWidget, Ui_Score):
         #.On appelle la méthode rang pour déterminer le rang en fonction du 
         #.score, puis on l'affiche
         rang = self.determinerRang(self.dico_score["score"])
-        self.LabelRangV.setText(unicode(rang))
+        self.LabelRangV.setText(rang.decode("utf-8"))
         #.On appelle la méthode pour générer la page de score à partir de la 
         #.DB locale, puis on l'affiche
         self.genererHTMLDB(self.dico_score)
@@ -1603,9 +1606,8 @@ class ScoreApplication(QWidget, Ui_Score):
     #.passé en paramètres
     def determinerRang(self, score):
         rang = [{"pseudo": elt["pseudo"], "score": int(elt["score"])}
-                for elt in utilsRang.getRang("score/rang")]
-        rang += {"pseudo": "Nul", "score": 0}
-
+                for elt in utilsRang.getRang("rang")]
+        rang.append({"pseudo": "Nul", "score": 0})
         rang_t = "-1"
 
         for i in range(len(rang) - 1):
@@ -1629,9 +1631,9 @@ class ScoreApplication(QWidget, Ui_Score):
         heure_cur = binascii.b2a_hex(self.dico_score["heure"])
         #.On définit l'adresse en fonction des pseudo, date et heure en hex
         adr = ("http://tbagrel1.pythonanywhere.com/app1/viewScores" +
-               "?score={}&date={}&heure={}").format(pseudo_cur,
-                                                    date_cur,
-                                                    heure_cur)
+               "?pseudo={}&date={}&heure={}").format(pseudo_cur,
+                                                     date_cur,
+                                                     heure_cur)
         #.On affiche la page internet correspondante
         webbrowser.open(adr)
 
@@ -1704,17 +1706,17 @@ class ScoreApplication(QWidget, Ui_Score):
         except:
             liste_A1 = []
 
-        rang = utilsRang.getRang("score/rang")
+        rang = utilsRang.getRang("rang")
         for i in range(len(rang)):
             rang[i]["pseudo"] = "#" + rang[i]["pseudo"]
         #.On essaye
         try:
             liste = sorted(liste_A0 + liste_A1 + rang,
-                           key=lambda dico: dico["score"],
+                           key=lambda dico: int(dico["score"]),
                            reverse=True)
         except:
             liste = []
-
+        print(liste)
         #.On gère le type de ligne
         pas_encore_trouve_best = True
         #.Pour chaque élément dans la liste
@@ -1757,7 +1759,8 @@ class ScoreApplication(QWidget, Ui_Score):
                         str(elt["cpm"]),
                         str(elt["mpm"]),
                         str(elt["temps"]),
-                        str(elt["d_h"]),
+                        str(elt["date"]),
+                        str(elt["heure"]),
                         str(elt["texte_mode_enh"]))
             c += nl
         #.Enfin, on finit d'écrire le fichier HTML

@@ -41,7 +41,7 @@ def ajouterScoreAttente(dico_score):
             liste = []
         liste.append(dico_score)
         fichier_score_A1 = open("score/scores_A1.db", "w")
-        pickle.dump(fichier_score_A1, liste)
+        pickle.dump(liste, fichier_score_A1)
         fichier_score_A1.close()
 
     else:
@@ -53,7 +53,7 @@ def ajouterScoreAttente(dico_score):
             liste = []
         liste.append(dico_score)
         fichier_score_A0 = open("score/scores_A0.db", "w")
-        pickle.dump(fichier_score_A0, liste)
+        pickle.dump(liste, fichier_score_A0)
         fichier_score_A0.close()
 
     #.###Ajout à `score_AX.db`
@@ -105,29 +105,31 @@ class ThreadSyncDB(QThread):
     #.`start()`, et dont la fin correspond à la fin de l'exécution du thread
     def run(self):
 
-        try:
-            self.print_d("try")
-            checksum = hashlib.md5(open(sys.argv[0], "rb").read()).hexdigest()
-            self.print_d(checksum)
-            checksum = binascii.b2a_hex(checksum)
-            self.print_d(checksum)
-            self.print_d(binascii.b2a_hex("90bbbcaa5a836045c40a064ee55b75fb"))
-            test_co = urllib.urlopen("http://tbagrel1.pythonanywhere.com/" +
-                                     "app1/testConnection?checksum={}"
-                                     .format(checksum)).read()
-            self.print_d(test_co)
-            if test_co != "OK":
-                raise ChecksumError
-        except:
-            test_co = "ERROR"
+        # try:
+        #     self.print_d("try")
+        #     checksum = hashlib.md5(open(sys.argv[0], "rb").read()).hexdigest()
+        #     self.print_d(checksum)
+        #     checksum = binascii.b2a_hex(checksum)
+        #     self.print_d(checksum)
+        #     self.print_d(binascii.b2a_hex("90bbbcaa5a836045c40a064ee55b75fb"))
+        #     test_co = urllib.urlopen("http://tbagrel1.pythonanywhere.com/" +
+        #                              "app1/testConnection?checksum={}"
+        #                              .format(checksum)).read()
+        #     self.print_d(test_co)
+        #     if test_co != "OK":
+        #         raise ChecksumError
+        # except:
+        #     test_co = "ERROR"
 
-        self.print_d(test_co)
+        # self.print_d(test_co)
+
+        test_co = "OK"
 
         if test_co == "OK":
             try:
                 fichier_score_AX = open("score/score_AX.db", "r")
                 liste_score_envoyer = pickle.load(fichier_score_AX)
-                fichier_score.close()
+                fichier_score_AX.close()
             except:
                 liste_score_envoyer = []
 
@@ -137,24 +139,30 @@ class ThreadSyncDB(QThread):
                 for elt in liste_score_envoyer:
                     #.`elt` correspond au score envoyé
                     try:
-                        retour = urllib.ulropen("http://tbagrel1.python" + 
+                        retour = urllib.urlopen("http://tbagrel1.python" + 
                                                 "anywhere.com/app1/send" + 
                                                 "Score?score={}"
                                                 .format(elt)).read()
                         self.print_d(retour)
                         if retour != "OK":
-                            raise RetourError
-                    except:
-                        erreur.append(elt)
-                        self.print_d("Erreur inconnue durant l'envoi du score")
+                            self.print_d(retour)
+                            raise Exception(retour)
+                    except Exception as e:
+                        retour = e.args[0]
+                        if retour != "Erreur : Hexadecimal Decode" and retour \
+                                != "Erreur : Decrypt AES" and retour != \
+                                "Erreur : Depickler" and retour != \
+                                "Erreur : Checksum":
+                            erreur.append(elt)
+                            self.print_d("Erreur inconnue durant l'envoi")
             else:
                 self.print_d("Aucun score à envoyer")
 
             #.On efface les scores en attente
             try:
-                os.remove("score/scores_AX.db")
+                os.remove("score/score_AX.db")
             except:
-                pass
+                self.print_d("Pas d'effacement des scores !!!")
 
             if erreur:
                 self.print_d("Une ou plusieurs erreurs à réécrire")
