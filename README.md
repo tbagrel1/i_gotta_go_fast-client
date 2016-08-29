@@ -1,5 +1,4 @@
 #Projet ISN : I Gotta Go Fast
-*Version Dev pour le nouveau serveur des scores*
 
 ##Présentation du projet
 
@@ -13,9 +12,3 @@
 ##Contact
 >Vous pouvez nous contacter à l'adresse : `tomsb07@gmail.com`.  
 
-##Présentation des balises dans la catégorie *Issues*
-
->`question` : Concerne les dernières modifications / finitions avant de rendre le projet  
->`enhancement` : À faire pour embellir/améliorer le programme, si on a le temps, mais pas de façon obligatoire  
->`invalid` : fonctionnalités qui manquent au programme, mais qui ne sont pas obligés forcément d'être présentes au moment du rendu du projet  
->`bug` : Problèmes importants dans le code ou dans le programme, qui doivent être absolument corrigés avant la livraison du projet mais également avant la prochaine release  
